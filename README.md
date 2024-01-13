@@ -24,7 +24,15 @@ You can then simulate a [webhook invocation](https://docs.freestuffbot.xyz/v1/we
 ```
 curl -i -X POST http://localhost:12345/freestuffbot.xyz/webhook \
   -H "Content-Type: application/json" \
-  -d '{ "event": "free_games", "secret": "wdaji29dJadj91jAjd9a92eDak2", "data": [ 142312, 499128 ] }'
+  -d '{ "event": "free_games", "secret": "wdaji29dJadj91jAjd9a92eDak2", "data": [ 565940 ] }'
+```
+
+If the above example's game IDs are too old and are not returning any data, you can fetch the currently-listed free games using this request:
+
+```
+curl -i https://api.freestuffbot.xyz/v1/games/free \
+  -H "Accept: application/json" \
+  -H "Authorization: Basic <your API key here>"
 ```
 
 This will not be able to complete the call as given, however, due to the absence of a configured API key.
