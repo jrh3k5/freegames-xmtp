@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
-import httpServer from './http_server/index.js';
+import { buildWebhookServer } from './http_server/index.js';
 
 dotenv.config();
+
+const httpServer = buildWebhookServer(process.env.FREESTUFF_WEBHOOK_SECRET);
 
 httpServer.listen(process.env.FREESTUFF_WEBHOOK_PORT, (err) => {
     if (err) {
