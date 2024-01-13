@@ -1,5 +1,7 @@
 # freegames-xmtp
-An XMTP bot that broadcasts announcements of free games over XMTP to subscribers
+An XMTP bot that broadcasts announcements of free games over XMTP to subscribers.
+
+This project has been validated to run on Node 18.
 
 ## Running Locally
 
