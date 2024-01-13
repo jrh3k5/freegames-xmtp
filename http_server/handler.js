@@ -1,6 +1,6 @@
 // NewWebhookHandler builds a freestuff webhook handler.
 // It returns a function that receives an Express request and response object.
-export function NewWebhookHandler(webhookSecret) {
+export function NewWebhookHandler(webhookSecret, freestuffClient) {
     return (req, res) => {
         const requestBody = req.body;
         if (!requestBody) {
@@ -30,7 +30,12 @@ export function NewWebhookHandler(webhookSecret) {
             return;
         }
     
-        console.log("request body", req.body);
+        const detailPromises = requestBody.data.map(gameID => freestuffClient.getGameDetails(gameID));
+
+        Promise.all(detailPromises).then(gameDetails => {
+            console.log(gameDetails);
+        }).catch(console.error);
+
         res.status(200);
         res.end();
     }

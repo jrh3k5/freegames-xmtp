@@ -5,8 +5,11 @@ describe("Freestuff Webhook Handler", () => {
   let webhookHandler;
   let webhookSecret;
   let response;
+  let freestuffClient;
+  let gameDetailsByID;
 
   beforeEach(() => {
+    gameDetailsByID = {};
     webhookSecret = "shhhhh";
 
     response = {
@@ -27,7 +30,12 @@ describe("Freestuff Webhook Handler", () => {
       response.ended = true;
     };
 
-    webhookHandler = NewWebhookHandler(webhookSecret);
+    freestuffClient = {};
+    freestuffClient.getGameDetails = gameID => {
+      return Promise.resolve(gameDetailsByID[gameID]);
+    }
+
+    webhookHandler = NewWebhookHandler(webhookSecret, freestuffClient);
   });
 
   describe("the request has no body", () => {
