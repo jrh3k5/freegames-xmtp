@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { NewWebhookHandler } from "../../http_server/handler.js";
+import { GameDetails } from "../../freestuff/model.js"
 
 describe("Freestuff Webhook Handler", () => { 
   let webhookHandler;
@@ -7,10 +8,19 @@ describe("Freestuff Webhook Handler", () => {
   let response;
   let freestuffClient;
   let gameDetailsByID;
+  let notifier;
+  let notifiedGameDetails;
 
   beforeEach(() => {
     gameDetailsByID = {};
     webhookSecret = "shhhhh";
+    notifiedGameDetails = []
+
+    notifier = {};
+    notifier.notify = gameDetails => {
+      notifiedGameDetails.push(gameDetails);
+      return Promise.resolve();
+    };
 
     response = {
       ended: false
@@ -35,12 +45,12 @@ describe("Freestuff Webhook Handler", () => {
       return Promise.resolve(gameDetailsByID[gameID]);
     }
 
-    webhookHandler = NewWebhookHandler(webhookSecret, freestuffClient);
+    webhookHandler = NewWebhookHandler(webhookSecret, freestuffClient, notifier);
   });
 
   describe("the request has no body", () => {
-    it("rejects the request", () => {
-      webhookHandler({}, response);
+    it("rejects the request", async () => {
+      await webhookHandler({}, response);
       expect(response.statusCode).to.equal(400);
       expect(response.responseBody).to.equal("No request body supplied");
       expect(response.ended).to.be.true;
@@ -65,9 +75,20 @@ describe("Freestuff Webhook Handler", () => {
         requestBody.event = "free_games";
       });
 
+      it("sends out a notification of the free game", async () => {
+        const gameDetails = new GameDetails("A Free Game", "Free is best", "https://free.game/")
+        const gameID = 12345;
+        gameDetailsByID[gameID] = gameDetails;
+        requestBody.data = [gameID];
+
+        await webhookHandler(request, response);
+
+        expect(notifiedGameDetails).to.contain(gameDetails);
+      });
+
       describe("there are no game IDs in the request", () => {
-        it("silently drops the request", () => {
-          webhookHandler(request, response);
+        it("silently drops the request", async () => {
+          await webhookHandler(request, response);
           expect(response.statusCode).to.equal(200);
           expect(response.ended).to.be.true.to.equal(true);;
         })
@@ -75,20 +96,22 @@ describe("Freestuff Webhook Handler", () => {
     });
 
     describe("the webhook secret is incorrect", () => {
-      it("rejects the request", () => {
+      it("rejects the request", async () => {
         requestBody.secret = "oopsies";
 
-        webhookHandler(request, response);
+        await webhookHandler(request, response);
+
         expect(response.statusCode).to.equal(401);
         expect(response.ended).to.be.true;
       });
     });
 
     describe("the event is not for free games", () => {
-      it("quietly drops the request", () => {
+      it("quietly drops the request", async () => {
         requestBody.event = "not_free_games";
 
-        webhookHandler(request, response);
+        await webhookHandler(request, response);
+
         expect(response.statusCode).to.equal(200);
         expect(response.ended).to.be.true;
       });

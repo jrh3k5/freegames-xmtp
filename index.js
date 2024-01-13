@@ -14,7 +14,7 @@ Client.create(signer, { env: "production" }).then(xmtpClient => {
     
     // Webhook
     const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
-    const httpServer = buildWebhookServer(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient);
+    const httpServer = buildWebhookServer(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, notifier);
     
     httpServer.listen(process.env.FREESTUFF_WEBHOOK_PORT, (err) => {
         if (err) {

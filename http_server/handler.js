@@ -1,7 +1,7 @@
 // NewWebhookHandler builds a freestuff webhook handler.
-// It returns a function that receives an Express request and response object.
-export function NewWebhookHandler(webhookSecret, freestuffClient) {
-    return (req, res) => {
+// It returns an async function that receives an Express request and response object.
+export function NewWebhookHandler(webhookSecret, freestuffClient, notifier) {
+    return async (req, res) => {
         const requestBody = req.body;
         if (!requestBody) {
             res.status(400).send("No request body supplied");
@@ -31,10 +31,9 @@ export function NewWebhookHandler(webhookSecret, freestuffClient) {
         }
     
         const detailPromises = requestBody.data.map(gameID => freestuffClient.getGameDetails(gameID));
-
-        Promise.all(detailPromises).then(gameDetails => {
-            console.log(gameDetails);
-        }).catch(console.error);
+        const allGameDetails = await Promise.all(detailPromises);
+        const notifyPromises = allGameDetails.map(gameDetails => notifier.notify(gameDetails));
+        await Promise.all(notifyPromises);
 
         res.status(200);
         res.end();

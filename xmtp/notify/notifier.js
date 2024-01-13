@@ -5,8 +5,18 @@ export class Notifier {
     }
 
     notify(gameDetails) {
-        this.recipientAddresses.forEach(receipientAddress => {
-            // TODO: implement sending of messages
-        })
+        const promises = this.recipientAddresses.map(receipientAddress => {
+            return new Promise((resolve, reject) => {
+                this.xmtpClient.conversations.newConversation(receipientAddress).then(conversation => {
+                    conversation.send(buildMessage(gameDetails)).then(resolve).catch(reject);
+                }).catch(reject);
+            });
+        });
+
+        return Promise.all(promises);
     }
+}
+
+function buildMessage(gameDetails) {
+    return `Free game: ${gameDetails.gameTitle}\n\nGet it here: ${gameDetails.url}`
 }
