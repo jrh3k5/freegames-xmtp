@@ -1,19 +1,24 @@
 export class Notifier {
-    constructor(xmtpClient, recipientAddresses) {
+    constructor(xmtpClient, subscriptionsService) {
         this.xmtpClient = xmtpClient;
-        this.recipientAddresses = recipientAddresses;
+        this.subscriptionsService = subscriptionsService;
     }
 
-    notify(gameDetails) {
-        const promises = this.recipientAddresses.map(receipientAddress => {
-            return new Promise((resolve, reject) => {
-                this.xmtpClient.conversations.newConversation(receipientAddress).then(conversation => {
-                    conversation.send(buildMessage(gameDetails)).then(resolve).catch(reject);
-                }).catch(reject);
-            });
-        });
+    async notify(gameDetails) {
+        const message = buildMessage(gameDetails);
 
-        return Promise.all(promises);
+        let subscriptionsResult = await this.subscriptionsService.getSubscriptions();
+        do {
+            for (let i = 0; i < subscriptionsResult.recipientAddresses.length; i++) {
+                const recipientAddress = subscriptionsResult.recipientAddresses[i];
+                console.debug(`Notifing recipient '${recipientAddress} of the free game '${gameDetails.gameTitle}'`);
+
+                const conversation = await this.xmtpClient.conversations.newConversation(recipientAddress);
+                await conversation.send(message);
+            }
+
+            subscriptionsResult = await this.subscriptionsService.getSubscriptions(subscriptionsResult.cursor);
+        } while(subscriptionsResult.recipientAddresses.length && subscriptionsResult.cursor)
     }
 }
 

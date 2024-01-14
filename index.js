@@ -15,6 +15,8 @@ const dynamodbClient = new DynamoDBClient({
     region: process.env.AWS_REGION
 });
 
+console.log("Waiting for subscriptions table presence");
+
 // Wait for the table to exist
 const results = await waitUntilTableExists({client: dynamodbClient, maxWaitTime: 30}, {TableName: SubscriptionsTableName})
 if (results.state !== 'SUCCESS') {
@@ -27,6 +29,9 @@ let defaultRecipients = [];
 if (process.env.XMTP_BOT_DEFAULT_RECIPIENTS) {
     defaultRecipients = process.env.XMTP_BOT_DEFAULT_RECIPIENTS.split(",");
 }
+
+console.log(`Seeding ${defaultRecipients.length} default recipients`);
+
 for (let i = 0; i < defaultRecipients.length; i++) {
     await subscriptionsService.upsertSubscription(defaultRecipients[i]);
 }
@@ -34,7 +39,7 @@ for (let i = 0; i < defaultRecipients.length; i++) {
 // XMTP
 const signer = new Wallet(process.env.XMTP_BOT_PRIVATE_KEY);
 Client.create(signer, { env: "production" }).then(xmtpClient => {
-    const notifier = new Notifier(xmtpClient, defaultRecipients);
+    const notifier = new Notifier(xmtpClient, subscriptionsService);
     
     // Webhook
     const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
