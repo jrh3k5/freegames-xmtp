@@ -1,0 +1,16 @@
+version: '3'
+services:
+  xmtp-bot:
+    image: node:18
+    user: "node"
+    working_dir: /home/node/app
+    env_file:
+      - .env
+    environment:
+      FREESTUFF_WEBHOOK_PORT: 12345
+      FREESTUFF_WEBHOOK_SECRET: wdaji29dJadj91jAjd9a92eDak2
+    volumes:
+      - ./:/home/node/app
+    ports:
+      - "12345:12345"
+    command: "node index.js"

@@ -5,8 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "mocha --recursive --exit",
-    "start": "node index.js"
+    "test": "mocha --recursive --exit"
   },
   "repository": {
     "type": "git",
