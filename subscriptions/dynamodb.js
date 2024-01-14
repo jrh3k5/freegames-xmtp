@@ -55,7 +55,7 @@ export class DynamoDBSubscriptionService {
         try {
             await this.dynamoDBClient.send(new PutItemCommand(input));
         } catch(error) {
-            if (error["__type"] === "ConditionalCheckFailedException") {
+            if ((error["__type"] || "").endsWith("ConditionalCheckFailedException")) {
                 console.debug(`Recipient '${recipientAddress}' is already subscribed`);
                 return;
             }
