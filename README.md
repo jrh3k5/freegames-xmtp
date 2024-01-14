@@ -7,6 +7,8 @@ This project has been validated to run on Node 18.
 
 To deploy this project, create a copy of the `.env.sample` file and fill out the configuratio properties presented in that file:
 
+* `AWS_REGION`: the AWS region into which you are deploying the application
+  * `AWS_ENDPOINT` only needs to be provided if you are using an alternative DynamoDB provider, such as LocalStack
 * `FREESTUFF_WEBHOOK_PORT`: the port on which this bot should listen for webhook requests
 * `FREESTUFF_WEBHOOK_SECRET`: the secret shared with the freestuffbot.xyz API to authenticate webhook requests
 * `FREESTUFF_API_KEY`: the API key used to make requests to the freestuffbot.xyz API

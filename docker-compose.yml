@@ -9,6 +9,10 @@ services:
     env_file:
       - .env
     environment:
+      AWS_ACCESS_KEY_ID: anythingwilldoforlocalstack
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
       FREESTUFF_WEBHOOK_PORT: 12345
       FREESTUFF_WEBHOOK_SECRET: wdaji29dJadj91jAjd9a92eDak2
     volumes:
@@ -19,11 +23,9 @@ services:
   localstack:
     container_name: "localstack"
     image: localstack/localstack:3.0.2
-    ports:
-      - "4566:4566"
     environment:
       DYNAMODB_SHARE_DB: 1
-      SERVICES: dynamodb
+      SERVICES: dynamodb,s3
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
