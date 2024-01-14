@@ -3,31 +3,47 @@ An XMTP bot that broadcasts announcements of free games over XMTP to subscribers
 
 This project has been validated to run on Node 18.
 
+## Deploying
+
+To deploy this project, create a copy of the `.env.sample` file and fill out the configuratio properties presented in that file:
+
+* `AWS_REGION`: the AWS region into which you are deploying the application
+  * `AWS_ENDPOINT` only needs to be provided if you are using an alternative DynamoDB provider, such as LocalStack
+* `FREESTUFF_WEBHOOK_PORT`: the port on which this bot should listen for webhook requests
+* `FREESTUFF_WEBHOOK_SECRET`: the secret shared with the freestuffbot.xyz API to authenticate webhook requests
+* `FREESTUFF_API_KEY`: the API key used to make requests to the freestuffbot.xyz API
+* `XMTP_BOT_DEFAULT_RECIPIENTS`: a comma-delimited list of addresses to be loaded on startup as subscribers who will receive game notifications
+* `XMTP_BOT_PRIVATE_KEY`: the private key to be used to sign messages sent to XMTP by the bot
+
+Install the source of this project in a desired location and then execute:
+
+```
+node index.js
+```
+
 ## Running Locally
 
-You can run this locally by executing:
-
-```
-npm run start
-```
-
-Following that, copy the example `.env.sample` file:
+First, create configuration for your deployment by copying the example `.env.sample` file:
 
 ```
 cp .env.sample .env
 ```
 
-The properties are:
+Fill out the properties, with the exception of the properties, below, which are provided by the `docker-compose.yml` file:
 
-* `FREESTUFF_WEBHOOK_PORT`: the port on which this bot should listen for webhook requests
-* `FREESTUFF_WEBHOOK_SECRET`: the secret shared with the freestuffbot.xyz API to authenticate webhook requests
-* `FREESTUFF_API_KEY`: the API key used to make requests to the freestuffbot.xyz API
-* `XMTP_BOT_PRIVATE_KEY`: the private key to be used to sign messages sent to XMTP by the bot
-* `XMTP_BOT_RECIPIENTS`: a comma-delimited list of addresses to which to send notifications about free games
+* `FREESTUFF_WEBHOOK_PORT`
+* `FREESTUFF_WEBHOOK_SECRET`
 
-**Note**: if you are following these steps to actually deploy this bot, _make sure you change the secret_.
 
-You can then simulate a [webhook invocation](https://docs.freestuffbot.xyz/v1/webhooks) with cURL:
+To get an API key to populate the `FREESTUFF_API_KEY` variable, refer to freestuffbot's documentation [here](https://docs.freestuffbot.xyz/).
+
+Then use Docker to start the service:
+
+```
+docker compose up -d
+```
+
+Once that is running, you can then simulate a [webhook invocation](https://docs.freestuffbot.xyz/v1/webhooks) with cURL:
 
 ```
 curl -i -X POST http://localhost:12345/freestuffbot.xyz/webhook \
@@ -42,7 +58,3 @@ curl -i https://api.freestuffbot.xyz/v1/games/free \
   -H "Accept: application/json" \
   -H "Authorization: Basic <your API key here>"
 ```
-
-This will not be able to complete the call as given, however, due to the absence of a configured API key.
-
-To get an API key, refer to freestuffbot's documentation [here](https://docs.freestuffbot.xyz/).

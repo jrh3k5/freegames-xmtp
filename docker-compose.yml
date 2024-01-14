@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  xmtp-bot:
+    image: node:18
+    depends_on:
+      - localstack
+    user: "node"
+    working_dir: /home/node/app
+    env_file:
+      - .env
+    environment:
+      AWS_ACCESS_KEY_ID: anythingwilldoforlocalstack
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
+      FREESTUFF_WEBHOOK_PORT: 12345
+      FREESTUFF_WEBHOOK_SECRET: wdaji29dJadj91jAjd9a92eDak2
+    volumes:
+      - ./:/home/node/app
+    ports:
+      - "12345:12345"
+    command: "node index.js"
+  localstack:
+    container_name: "localstack"
+    image: localstack/localstack:3.0.2
+    environment:
+      DYNAMODB_SHARE_DB: 1
+      SERVICES: dynamodb,s3
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ".docker/localstack/bootstrap:/etc/localstack/init/ready.d"

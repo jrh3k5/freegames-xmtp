@@ -5,8 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "mocha --recursive --exit",
-    "start": "node index.js"
+    "test": "mocha --recursive --exit"
   },
   "repository": {
     "type": "git",
@@ -20,6 +19,7 @@
   "author": "Joshua Hyde",
   "license": "Apache-2.0",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.490.0",
     "@xmtp/xmtp-js": "^11.3.2",
     "axios": "^1.6.5",
     "chai": "^5.0.0",
