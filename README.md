@@ -12,8 +12,8 @@ To deploy this project, create a copy of the `.env.sample` file and fill out the
 * `FREESTUFF_WEBHOOK_PORT`: the port on which this bot should listen for webhook requests
 * `FREESTUFF_WEBHOOK_SECRET`: the secret shared with the freestuffbot.xyz API to authenticate webhook requests
 * `FREESTUFF_API_KEY`: the API key used to make requests to the freestuffbot.xyz API
+* `XMTP_BOT_DEFAULT_RECIPIENTS`: a comma-delimited list of addresses to be loaded on startup as subscribers who will receive game notifications
 * `XMTP_BOT_PRIVATE_KEY`: the private key to be used to sign messages sent to XMTP by the bot
-* `XMTP_BOT_RECIPIENTS`: a comma-delimited list of addresses to which to send notifications about free games
 
 Install the source of this project in a desired location and then execute:
 

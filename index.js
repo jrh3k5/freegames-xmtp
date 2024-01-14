@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import { FreestuffClient } from "./freestuff/client.js";
 import { Notifier } from "./xmtp/notify/notifier.js";
 import { Wallet } from "ethers";
+import { SubscriptionsTableName } from "./dynamodb/constants.js"
+import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 
 dotenv.config();
 
@@ -14,16 +16,25 @@ const dynamodbClient = new DynamoDBClient({
 });
 
 // Wait for the table to exist
-const results = await waitUntilTableExists({client: dynamodbClient, maxWaitTime: 30}, {TableName: "subscriptions"})
+const results = await waitUntilTableExists({client: dynamodbClient, maxWaitTime: 30}, {TableName: SubscriptionsTableName})
 if (results.state !== 'SUCCESS') {
-    dynamodbClient
     throw `Subscriptions table did not exist in sufficient time; result state was '${results.state}'`;
+}
+const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
+
+// Load the default recipients
+let defaultRecipients = [];
+if (process.env.XMTP_BOT_DEFAULT_RECIPIENTS) {
+    defaultRecipients = process.env.XMTP_BOT_DEFAULT_RECIPIENTS.split(",");
+}
+for (let i = 0; i < defaultRecipients.length; i++) {
+    await subscriptionsService.upsertSubscription(defaultRecipients[i]);
 }
 
 // XMTP
 const signer = new Wallet(process.env.XMTP_BOT_PRIVATE_KEY);
 Client.create(signer, { env: "production" }).then(xmtpClient => {
-    const notifier = new Notifier(xmtpClient, process.env.XMTP_BOT_RECIPIENTS.split(","));
+    const notifier = new Notifier(xmtpClient, defaultRecipients);
     
     // Webhook
     const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
