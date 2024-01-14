@@ -46,7 +46,7 @@ export class DynamoDBSubscriptionService {
                     S: recipientAddress
                 },
                 "subscription_start_date": {
-                    N: new Date().getTime()
+                    N: `${new Date().getTime()}`
                 }
             },
             ConditionExpression: "attribute_not_exists(recipient_address)"
