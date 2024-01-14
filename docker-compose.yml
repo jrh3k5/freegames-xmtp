@@ -1,7 +1,9 @@
-version: '3'
+version: '3.8'
 services:
   xmtp-bot:
     image: node:18
+    depends_on:
+      - localstack
     user: "node"
     working_dir: /home/node/app
     env_file:
@@ -14,3 +16,15 @@ services:
     ports:
       - "12345:12345"
     command: "node index.js"
+  localstack:
+    container_name: "localstack"
+    image: localstack/localstack:3.0.2
+    ports:
+      - "4566:4566"
+    environment:
+      DYNAMODB_SHARE_DB: 1
+      SERVICES: dynamodb
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ".docker/localstack/bootstrap:/etc/localstack/init/ready.d"
