@@ -16,12 +16,16 @@ export function NewWebhookHandler(webhookSecret, freestuffClient, notifier) {
             return;
         }
     
+        console.log(`Handling event: '${requestBody.event}'`);
+
         if (requestBody.event !== "free_games") {
             res.status(200);
             res.end();
             // not a supported event
             return;
         }
+
+        console.log(`Receive game IDs for free_games event: ${requestBody.data}`);
     
         // If the are no IDs, then do nothing
         if (!requestBody.data || !requestBody.data.length) {
@@ -30,10 +34,18 @@ export function NewWebhookHandler(webhookSecret, freestuffClient, notifier) {
             return;
         }
     
-        const detailPromises = requestBody.data.map(gameID => freestuffClient.getGameDetails(gameID));
-        const allGameDetails = await Promise.all(detailPromises);
-        const notifyPromises = allGameDetails.map(gameDetails => notifier.notify(gameDetails));
-        await Promise.all(notifyPromises);
+        try {
+            const detailPromises = requestBody.data.map(gameID => freestuffClient.getGameDetails(gameID));
+            const allGameDetails = await Promise.all(detailPromises);
+            const notifyPromises = allGameDetails.map(gameDetails => notifier.notify(gameDetails));
+            await Promise.all(notifyPromises);
+        } catch(error) {
+            console.error("Unexpected error notifying about games:", error)
+            res.status(500);
+            res.end();
+
+            return;
+        }
 
         res.status(200);
         res.end();
