@@ -1,4 +1,4 @@
-import { GetItemCommand, PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, DeleteItemCommand, PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { SubscriptionsTableName } from "../dynamodb/constants.js";
 import { SubscriptionsPage } from "./model.js";
 
@@ -49,6 +49,20 @@ export class DynamoDBSubscriptionService {
         }
 
         return new SubscriptionsPage(recipientAddresses, scanResult.LastEvaluatedKey);
+    }
+
+    // unsubscribe removes the given address from being subscribed to notifications.
+    async unsubscribe(recipientAddress) {
+        const input = {
+            TableName: SubscriptionsTableName,
+            Key: {
+                "recipient_address": {
+                    S: recipientAddress.toLowerCase()
+                }
+            }
+        };
+
+        await this.dynamoDBClient.send(new DeleteItemCommand(input));
     }
 
     // upsertSubscription will create a subscription for the given address if it does not already exist
