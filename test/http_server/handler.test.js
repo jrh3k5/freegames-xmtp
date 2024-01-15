@@ -76,8 +76,8 @@ describe("Freestuff Webhook Handler", () => {
       });
 
       it("sends out a notification of the free game", async () => {
-        const gameDetails = new GameDetails("A Free Game", "Free is best", "https://free.game/")
         const gameID = 12345;
+        const gameDetails = new GameDetails(`${gameID}`, "A Free Game", "Free is best", "https://free.game/")
         gameDetailsByID[gameID] = gameDetails;
         requestBody.data = [gameID];
 

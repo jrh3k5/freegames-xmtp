@@ -12,7 +12,7 @@ This describes how to deploy this project.
 This uses DynamoDB to store data and SQS to enqueue data. You must have set up in your account:
 
 * A DynamoDB table named `subscriptions` with a key called `recipient_address`
-* Two SQS queues named:
+* Two SQS queues named, each created as a FIFO queue:
   * `game_notifications`
   * `user_notifications`
 
