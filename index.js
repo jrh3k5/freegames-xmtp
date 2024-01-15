@@ -3,17 +3,22 @@ import { buildWebhookServer } from "./http_server/index.js";
 import { Client } from "@xmtp/xmtp-js";
 import dotenv from "dotenv";
 import { FreestuffClient } from "./freestuff/client.js";
-import { Notifier } from "./xmtp/notify/notifier.js";
+import { GameNotifier } from "./queue/game_notification.js";
+import { consumeUserNotifications } from "./queue/user_notification.js";
 import { Wallet } from "ethers";
 import { SubscriptionsTableName } from "./dynamodb/constants.js"
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
+import { SQSClient } from "@aws-sdk/client-sqs";
+import { Notifier } from "./xmtp/notify/notifier.js"
 
 dotenv.config();
 
-const dynamodbClient = new DynamoDBClient({
+const awsConfig = {
     endpoint: process.env.AWS_ENDPOINT,
     region: process.env.AWS_REGION
-});
+};
+
+const dynamodbClient = new DynamoDBClient(awsConfig);
 
 console.log("Waiting for subscriptions table presence");
 
@@ -36,14 +41,21 @@ for (let i = 0; i < defaultRecipients.length; i++) {
     await subscriptionsService.upsertSubscription(defaultRecipients[i]);
 }
 
+// SQS
+const gameQueueClient = new SQSClient(awsConfig);
+const gameNotifier = new GameNotifier(gameQueueClient, process.env.AWS_SQS_QUEUE_GAME_URL);
+
 // XMTP
 const signer = new Wallet(process.env.XMTP_BOT_PRIVATE_KEY);
 Client.create(signer, { env: "production" }).then(xmtpClient => {
-    const notifier = new Notifier(xmtpClient, subscriptionsService);
+    const userNotifier = new Notifier(xmtpClient, subscriptionsService);
     
     // Webhook
     const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
-    const httpServer = buildWebhookServer(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, notifier);
+    const httpServer = buildWebhookServer(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, gameNotifier);
+
+    // consume game notifications
+    consumeUserNotifications(gameQueueClient, process.env.AWS_SQS_QUEUE_GAME_URL, userNotifier);
     
     httpServer.listen(process.env.FREESTUFF_WEBHOOK_PORT, (err) => {
         if (err) {
