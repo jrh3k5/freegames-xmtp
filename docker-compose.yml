@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  xmtp-bot:
+  xmtp-webhook:
     image: node:18
     depends_on:
       - localstack
@@ -17,11 +17,29 @@ services:
       AWS_SQS_QUEUE_USERS_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/user_notifications.fifo
       FREESTUFF_WEBHOOK_PORT: 12345
       FREESTUFF_WEBHOOK_SECRET: wdaji29dJadj91jAjd9a92eDak2
+      XMTP_ENV: production
     volumes:
       - ./:/home/node/app
     ports:
       - "12345:12345"
-    command: "node index.js"
+    command: "node webhook.js"
+  xmtp-bot:
+    image: node:18
+    depends_on:
+      - localstack
+    user: "node"
+    working_dir: /home/node/app
+    env_file:
+      - .env
+    environment:
+      AWS_ACCESS_KEY_ID: anythingwilldoforlocalstack
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
+      XMTP_ENV: production
+    volumes:
+      - ./:/home/node/app
+    command: "node bot.js"
   localstack:
     container_name: "localstack"
     image: localstack/localstack:3.0.2

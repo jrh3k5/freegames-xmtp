@@ -2,7 +2,7 @@
   "name": "freegames-xmtp",
   "version": "1.0.0",
   "description": "An XMTP bot that broadcasts announcements of free games",
-  "main": "index.js",
+  "main": "webhook.js",
   "type": "module",
   "scripts": {
     "test": "mocha --recursive --exit"
@@ -21,6 +21,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.490.0",
     "@aws-sdk/client-sqs": "^3.490.0",
+    "@xmtp/bot-starter": "^1.1.4",
     "@xmtp/xmtp-js": "^11.3.2",
     "axios": "^1.6.5",
     "chai": "^5.0.0",
