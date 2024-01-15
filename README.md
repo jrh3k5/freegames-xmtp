@@ -27,13 +27,21 @@ To deploy this project, create a copy of the `.env.sample` file and fill out the
 * `FREESTUFF_WEBHOOK_PORT`: the port on which this bot should listen for webhook requests
 * `FREESTUFF_WEBHOOK_SECRET`: the secret shared with the freestuffbot.xyz API to authenticate webhook requests
 * `FREESTUFF_API_KEY`: the API key used to make requests to the freestuffbot.xyz API
+* `KEY`: the private key to be used to sign messages sent to XMTP by the bot
 * `XMTP_BOT_DEFAULT_RECIPIENTS`: a comma-delimited list of addresses to be loaded on startup as subscribers who will receive game notifications
-* `XMTP_BOT_PRIVATE_KEY`: the private key to be used to sign messages sent to XMTP by the bot
 
-Install the source of this project in a desired location and then execute:
+Install the source of this project in a desired location.
+
+To launch the webhook and webhook processing pipeline, execute:
 
 ```
-node index.js
+node webhook.js
+```
+
+To launch the bot that handles user engagement, execute:
+
+```
+node bot.js
 ```
 
 ## Running Locally
@@ -47,8 +55,8 @@ cp .env.sample .env
 Most of these values are defined in `docker-compose.yaml`; you only need to provide:
 
 * `FREESTUFF_API_KEY`
+* `KEY`
 * `XMTP_BOT_DEFAULT_RECIPIENTS`
-* `XMTP_BOT_PRIVATE_KEY`
 
 To get an API key to populate the `FREESTUFF_API_KEY` variable, refer to freestuffbot's documentation [here](https://docs.freestuffbot.xyz/).
 

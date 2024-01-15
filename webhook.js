@@ -10,6 +10,7 @@ import { SubscriptionsTableName } from "./dynamodb/constants.js"
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 import { SQSClient } from "@aws-sdk/client-sqs";
 import { Notifier } from "./xmtp/notify/notifier.js"
+import run from "@xmtp/bot-starter"
 
 dotenv.config();
 
@@ -31,25 +32,13 @@ if (results.state !== 'SUCCESS') {
 }
 const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
 
-// Load the default recipients
-let defaultRecipients = [];
-if (process.env.XMTP_BOT_DEFAULT_RECIPIENTS) {
-    defaultRecipients = process.env.XMTP_BOT_DEFAULT_RECIPIENTS.split(",");
-}
-
-console.log(`Seeding ${defaultRecipients.length} default recipients`);
-
-for (let i = 0; i < defaultRecipients.length; i++) {
-    await subscriptionsService.upsertSubscription(defaultRecipients[i]);
-}
-
 // SQS
 const sqsClient = new SQSClient(awsConfig);
 const gameNotifier = new GameNotifier(sqsClient, gameNotificationQueueURL);
 
 // XMTP
-const signer = new Wallet(process.env.XMTP_BOT_PRIVATE_KEY);
-Client.create(signer, { env: "production" }).then(xmtpClient => {
+const signer = new Wallet(process.env.KEY);
+Client.create(signer, { env: process.env.XMTP_ENV }).then(xmtpClient => {
     const xmtpNotifier = new Notifier(xmtpClient);
     
     // Webhook
