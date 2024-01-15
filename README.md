@@ -30,10 +30,18 @@ To deploy this project, create a copy of the `.env.sample` file and fill out the
 * `KEY`: the private key to be used to sign messages sent to XMTP by the bot
 * `XMTP_BOT_DEFAULT_RECIPIENTS`: a comma-delimited list of addresses to be loaded on startup as subscribers who will receive game notifications
 
-Install the source of this project in a desired location and then execute:
+Install the source of this project in a desired location.
+
+To launch the webhook and webhook processing pipeline, execute:
 
 ```
 node webhook.js
+```
+
+To launch the bot that handles user engagement, execute:
+
+```
+node bot.js
 ```
 
 ## Running Locally

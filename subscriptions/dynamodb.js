@@ -1,10 +1,25 @@
-import { PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { SubscriptionsTableName } from "../dynamodb/constants.js";
 import { SubscriptionsPage } from "./model.js";
 
 export class DynamoDBSubscriptionService {
     constructor(dynamoDBClient) {
         this.dynamoDBClient = dynamoDBClient;
+    }
+
+    // isSubscribed determines if the given recipient address has subscribed.
+    async isSubscribed(recipientAddress) {
+        const input = {
+            TableName: SubscriptionsTableName,
+            Key: {
+                "recipient_address": {
+                    S: recipientAddress.toLowerCase()
+                }
+            }
+        };
+
+        const getResult = await this.dynamoDBClient.send(new GetItemCommand(input));
+        return !!getResult.Item;
     }
 
     // getSubscriptionsPage gets the stored subscriptions as a SubscriptionsPage instance.
@@ -43,7 +58,7 @@ export class DynamoDBSubscriptionService {
             TableName: SubscriptionsTableName,
             Item: {
                 "recipient_address": {
-                    S: recipientAddress
+                    S: recipientAddress.toLowerCase()
                 },
                 "subscription_start_date": {
                     N: `${new Date().getTime()}`
