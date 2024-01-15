@@ -4,6 +4,8 @@ import { SubscriptionsTableName } from "./dynamodb/constants.js"
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 import run from "@xmtp/bot-starter"
 import { NewBotHandler } from "./xmtp/bot_handler.js";
+import { CachingSubscriptionService } from "./subscriptions/caching.js";
+import { newCache } from "./cache/cache.js";
 
 dotenv.config();
 
@@ -20,7 +22,9 @@ const results = await waitUntilTableExists({client: dynamodbClient, maxWaitTime:
 if (results.state !== 'SUCCESS') {
     throw `Subscriptions table did not exist in sufficient time; result state was '${results.state}'`;
 }
-const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
+const dynamoDBSubscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
+const cache = newCache();
+const cachingSubscriptionsService = new CachingSubscriptionService(dynamoDBSubscriptionsService, cache);
 
 // Load the default recipients
 let defaultRecipients = [];
@@ -31,10 +35,10 @@ if (process.env.XMTP_BOT_DEFAULT_RECIPIENTS) {
 console.log(`Seeding ${defaultRecipients.length} default recipients`);
 
 for (let i = 0; i < defaultRecipients.length; i++) {
-    await subscriptionsService.upsertSubscription(defaultRecipients[i]);
+    await cachingSubscriptionsService.upsertSubscription(defaultRecipients[i]);
 }
 
-const botHandler = NewBotHandler(subscriptionsService);
+const botHandler = NewBotHandler(cachingSubscriptionsService);
 
 // XMTP
 run(botHandler);
