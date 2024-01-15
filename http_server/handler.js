@@ -1,6 +1,6 @@
 // NewWebhookHandler builds a freestuff webhook handler.
 // It returns an async function that receives an Express request and response object.
-export function NewWebhookHandler(webhookSecret, freestuffClient, notifier) {
+export function NewWebhookHandler(webhookSecret, freestuffClient, notifier, isKilled) {
     return async (req, res) => {
         const requestBody = req.body;
         if (!requestBody) {
@@ -12,6 +12,13 @@ export function NewWebhookHandler(webhookSecret, freestuffClient, notifier) {
         if (requestBody.secret !== webhookSecret) {
             // reject anything without the needed secret
             res.status(401);
+            res.end();
+            return;
+        }
+
+        if (!!isKilled) {
+            console.debug(`Webhook kill switch enabled; nothing will done for game IDs: ${requestBody.data}`);
+            res.status(200);
             res.end();
             return;
         }

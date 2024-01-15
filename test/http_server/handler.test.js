@@ -46,7 +46,7 @@ describe("Freestuff Webhook Handler", () => {
     }
 
     webhookHandler = NewWebhookHandler(webhookSecret, freestuffClient, notifier);
-  });
+  })
 
   describe("the request has no body", () => {
     it("rejects the request", async () => {
@@ -54,8 +54,8 @@ describe("Freestuff Webhook Handler", () => {
       expect(response.statusCode).to.equal(400);
       expect(response.responseBody).to.equal("No request body supplied");
       expect(response.ended).to.be.true;
-    });
-  });
+    })
+  })
 
   describe("the request has a body", () => {
     let request;
@@ -68,12 +68,12 @@ describe("Freestuff Webhook Handler", () => {
       request = {
         body: requestBody
       };
-    });
+    })
 
     describe("for a 'free_games' event", () => {
       beforeEach(() => {
         requestBody.event = "free_games";
-      });
+      })
 
       it("sends out a notification of the free game", async () => {
         const gameID = 12345;
@@ -84,7 +84,7 @@ describe("Freestuff Webhook Handler", () => {
         await webhookHandler(request, response);
 
         expect(notifiedGameDetails).to.contain(gameDetails);
-      });
+      })
 
       describe("there are no game IDs in the request", () => {
         it("silently drops the request", async () => {
@@ -92,8 +92,8 @@ describe("Freestuff Webhook Handler", () => {
           expect(response.statusCode).to.equal(200);
           expect(response.ended).to.be.true.to.equal(true);;
         })
-      });
-    });
+      })
+    })
 
     describe("the webhook secret is incorrect", () => {
       it("rejects the request", async () => {
@@ -103,8 +103,8 @@ describe("Freestuff Webhook Handler", () => {
 
         expect(response.statusCode).to.equal(401);
         expect(response.ended).to.be.true;
-      });
-    });
+      })
+    })
 
     describe("the event is not for free games", () => {
       it("quietly drops the request", async () => {
@@ -114,7 +114,24 @@ describe("Freestuff Webhook Handler", () => {
 
         expect(response.statusCode).to.equal(200);
         expect(response.ended).to.be.true;
-      });
-    });
-  });
-});
+      })
+    })
+
+    describe("the webhook kill switch is enabed", () => {
+      it("silently drops the request", async () => {
+        const killSwitched = NewWebhookHandler(webhookSecret, freestuffClient, notifier, true);
+  
+        const gameID = 98765;
+        const gameDetails = new GameDetails(`${gameID}`, "No One Will Know About This", "It Is Kill-Switched", "https://kill.switch/")
+        gameDetailsByID[gameID] = gameDetails;
+        requestBody.event = "free_games";
+        requestBody.data = [gameID];
+  
+        await killSwitched(request, response);
+  
+        // no notifications should have gone out
+        expect(notifiedGameDetails).to.not.contain(gameDetails);
+      })
+    })
+  })
+})

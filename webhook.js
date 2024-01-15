@@ -4,13 +4,13 @@ import { Client } from "@xmtp/xmtp-js";
 import dotenv from "dotenv";
 import { FreestuffClient } from "./freestuff/client.js";
 import { GameNotifier, consumeGameNotifications } from "./queue/game_notification.js";
-import { consumeUserNotifications } from "./queue/user_notification.js";
+import { consumeUserNotifications, newUserNotificationHandler } from "./queue/user_notification.js";
 import { Wallet } from "ethers";
 import { SubscriptionsTableName } from "./dynamodb/constants.js"
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 import { SQSClient } from "@aws-sdk/client-sqs";
 import { Notifier } from "./xmtp/notify/notifier.js"
-import run from "@xmtp/bot-starter"
+import { NewWebhookHandler } from "./http_server/handler.js";
 
 dotenv.config();
 
@@ -43,11 +43,14 @@ Client.create(signer, { env: process.env.XMTP_ENV }).then(xmtpClient => {
     
     // Webhook
     const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
-    const httpServer = buildWebhookServer(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, gameNotifier);
+    const webhookHandler = NewWebhookHandler(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, gameNotifier, process.env.KILL_SWITCH_WEBHOOK);
+    const httpServer = buildWebhookServer(webhookHandler);
 
     // consume game notifications
     consumeGameNotifications(sqsClient, gameNotificationQueueURL, userNotificationQueueURL, subscriptionsService);
-    consumeUserNotifications(sqsClient, userNotificationQueueURL, xmtpNotifier);
+
+    const userNotificationsHandler = newUserNotificationHandler(xmtpNotifier, process.env.KILL_SWITCH_XMTP_MESSAGES);
+    consumeUserNotifications(sqsClient, userNotificationQueueURL, userNotificationsHandler);
     
     httpServer.listen(process.env.FREESTUFF_WEBHOOK_PORT, (err) => {
         if (err) {
