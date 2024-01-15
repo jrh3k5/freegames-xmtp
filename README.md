@@ -5,10 +5,25 @@ This project has been validated to run on Node 18.
 
 ## Deploying
 
+This describes how to deploy this project.
+
+### Prerequisites
+
+This uses DynamoDB to store data and SQS to enqueue data. You must have set up in your account:
+
+* A DynamoDB table named `subscriptions` with a key called `recipient_address`
+* Two SQS queues named:
+  * `game_notifications`
+  * `user_notifications`
+
+### Configuration
+
 To deploy this project, create a copy of the `.env.sample` file and fill out the configuratio properties presented in that file:
 
 * `AWS_REGION`: the AWS region into which you are deploying the application
   * `AWS_ENDPOINT` only needs to be provided if you are using an alternative DynamoDB provider, such as LocalStack
+* `AWS_SQS_QUEUE_GAME_URL`: the URL of the SQS queue used to contain the queued game notifications
+* `AWS_SQS_QUEUE_USERS_URL`: the URL of the SQS queue used to contain queued notifications for users
 * `FREESTUFF_WEBHOOK_PORT`: the port on which this bot should listen for webhook requests
 * `FREESTUFF_WEBHOOK_SECRET`: the secret shared with the freestuffbot.xyz API to authenticate webhook requests
 * `FREESTUFF_API_KEY`: the API key used to make requests to the freestuffbot.xyz API
@@ -29,11 +44,11 @@ First, create configuration for your deployment by copying the example `.env.sam
 cp .env.sample .env
 ```
 
-Fill out the properties, with the exception of the properties, below, which are provided by the `docker-compose.yml` file:
+Most of these values are defined in `docker-compose.yaml`; you only need to provide:
 
-* `FREESTUFF_WEBHOOK_PORT`
-* `FREESTUFF_WEBHOOK_SECRET`
-
+* `FREESTUFF_API_KEY`
+* `XMTP_BOT_DEFAULT_RECIPIENTS`
+* `XMTP_BOT_PRIVATE_KEY`
 
 To get an API key to populate the `FREESTUFF_API_KEY` variable, refer to freestuffbot's documentation [here](https://docs.freestuffbot.xyz/).
 
