@@ -1,5 +1,6 @@
 export class GameDetails {
-    constructor(gameTitle, gameDescription, url) {
+    constructor(gameID, gameTitle, gameDescription, url) {
+        this.gameID = gameID;
         this.gameTitle = gameTitle;
         this.gameDescription = gameDescription;
         this.url = url;

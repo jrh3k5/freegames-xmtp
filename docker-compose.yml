@@ -13,8 +13,8 @@ services:
       AWS_ENDPOINT: http://localstack:4566
       AWS_REGION: us-east-1
       AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
-      AWS_SQS_QUEUE_GAME_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/game_notifications
-      AWS_SQS_QUEUE_USERS_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/user_notifications
+      AWS_SQS_QUEUE_GAME_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/game_notifications.fifo
+      AWS_SQS_QUEUE_USERS_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/user_notifications.fifo
       FREESTUFF_WEBHOOK_PORT: 12345
       FREESTUFF_WEBHOOK_SECRET: wdaji29dJadj91jAjd9a92eDak2
     volumes:

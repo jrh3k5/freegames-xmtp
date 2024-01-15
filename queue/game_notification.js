@@ -7,10 +7,11 @@ export function consumeGameNotifications(sqsClient,
                                          gameSQSQueueURL, userSQSQueueURL,
                                          subscriptionsService) {
     const app = Consumer.create({
-        messageAttributeNames: ["GameTitle", "GameDescription", "StoreURL"],
+        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "StoreURL"],
         sqs: sqsClient,
         queueUrl: gameSQSQueueURL,
         handleMessage: async (message) => {
+            const gameID = message.MessageAttributes.GameID.StringValue;
             const gameTitle = message.MessageAttributes.GameTitle.StringValue;
             const gameDescription = message.MessageAttributes.GameDescription.StringValue;
             const storeURL = message.MessageAttributes.StoreURL.StringValue;
@@ -24,6 +25,10 @@ export function consumeGameNotifications(sqsClient,
                     const input = {
                         QueueUrl: userSQSQueueURL,
                         MessageAttributes: {
+                            "GameID": {
+                                DataType: "String",
+                                StringValue: gameID
+                            },
                             "GameTitle": {
                                 DataType: "String",
                                 StringValue: gameTitle
@@ -41,7 +46,9 @@ export function consumeGameNotifications(sqsClient,
                                 StringValue: storeURL
                             }
                         },
-                        MessageBody: "_" // placeholder to satisfy minimum requirement
+                        MessageBody: "_", // placeholder to satisfy minimum requirement
+                        MessageGroupId: gameID,
+                        MessageDeduplicationId: `${gameID}-${recipientAddress}`
                     };
 
                     await sqsClient.send(new SendMessageCommand(input));
@@ -70,9 +77,15 @@ export class GameNotifier {
     }
 
     async notify(gameDetails) {
+        const gameID = gameDetails.gameID;
+        
         const input = {
             QueueUrl: this.queueURL,
             MessageAttributes: {
+                "GameID": {
+                    DataType: "String",
+                    StringValue: gameID
+                },
                 "GameTitle": {
                     DataType: "String",
                     StringValue: gameDetails.gameTitle
@@ -86,7 +99,9 @@ export class GameNotifier {
                     StringValue: gameDetails.url
                 }
             },
-            MessageBody: "_" // placeholder to satisfy minimum requirement
+            MessageBody: "_", // placeholder to satisfy minimum requirement
+            MessageGroupId: gameID,
+            MessageDeduplicationId: gameID
         };
 
         await this.sqs.send(new SendMessageCommand(input));

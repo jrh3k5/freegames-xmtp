@@ -35,7 +35,7 @@ export class FreestuffClient {
                     const gameDescription = gameDetails.description;
                     const gameURL = gameDetails.urls.default;
 
-                    resolve(new GameDetails(gameTitle, gameDescription, gameURL));
+                    resolve(new GameDetails(`${gameID}`, gameTitle, gameDescription, gameURL));
                 }
             }).catch(reject);
         });
