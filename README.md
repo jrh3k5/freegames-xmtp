@@ -30,7 +30,16 @@ To deploy this project, create a copy of the `.env.sample` file and fill out the
 * `KEY`: the private key to be used to sign messages sent to XMTP by the bot
 * `XMTP_BOT_DEFAULT_RECIPIENTS`: a comma-delimited list of addresses to be loaded on startup as subscribers who will receive game notifications
 
-Install the source of this project in a desired location.
+#### Kill Switches
+
+This supports the following kill switches:
+
+* `KILL_SWITCH_XMTP_MESSAGES`: (default `false`); if set to `true`, then messages from the user notification queue will be consumed, but no messages will be sent via XMTP
+* `KILL_SWITCH_WEBHOOK`: (default `false`); if set to to `true`, then requests will be received via the webhook, but no game notification messages will be enqueued and no lookups of game details will be executed
+
+### Running the Application
+
+Install the source of this project in a desired location. Make sure to run `npm ci`
 
 To launch the webhook and webhook processing pipeline, execute:
 
