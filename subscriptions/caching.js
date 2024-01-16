@@ -18,6 +18,7 @@ export class CachingSubscriptionService {
     }
 
     async getSubscriptions(cursor) {
+        // deliberately not caching this
         return await this.delegateService.getSubscriptions(cursor);
     }
 
@@ -32,7 +33,7 @@ export class CachingSubscriptionService {
         if (cached != undefined && !cached) {
             // only delete the cached data if we previously cached
             // that the user is not subscribed
-            this.cache.del(recipientAddress);
+            this.cache.del(cacheKey);
         }
         return await this.delegateService.upsertSubscription(recipientAddress);
     }
