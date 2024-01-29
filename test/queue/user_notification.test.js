@@ -28,6 +28,8 @@ describe("User Notification Handler", () => {
         const gameTitle = "This is a title";
         const gameDescription = "This is a game description";
         const storeURL = "http://this.is.a.store.url/";
+        const originalPrice = "19.99";
+        const store = "steam";
 
         const recipientAddress = "address.recipient";
 
@@ -47,6 +49,12 @@ describe("User Notification Handler", () => {
                 },
                 StoreURL: {
                     StringValue: storeURL
+                },
+                OriginalPrice: {
+                    StringValue: originalPrice
+                },
+                Store: {
+                    StringValue: store
                 }
             }
         };
@@ -60,6 +68,8 @@ describe("User Notification Handler", () => {
         expect(capturedDetails.gameTitle).to.equal(gameTitle);
         expect(capturedDetails.gameDescription).to.equal(gameDescription);
         expect(capturedDetails.url).to.equal(storeURL);
+        expect(capturedDetails.originalPrice).to.equal(originalPrice);
+        expect(capturedDetails.store).to.equal(store);
     })
 
     describe("the kill switch is enabled", () => {
