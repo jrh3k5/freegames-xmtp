@@ -6,9 +6,11 @@ describe("Bot Handler", () => {
     let sentMessages; // the messages sent to the user
 
     let handler;
+    let allowList;
     let xmtpContext;
 
     beforeEach(() => {
+        allowList = [];
         subscribedAddresses = [];
         sentMessages = [];
 
@@ -43,7 +45,7 @@ describe("Bot Handler", () => {
             return Promise.resolve();
         }
 
-        handler = NewBotHandler(subscriptionsService);
+        handler = NewBotHandler(subscriptionsService, allowList);
     })
 
     describe("the sender is subscribed", () => {
@@ -90,6 +92,9 @@ describe("Bot Handler", () => {
 
         beforeEach(() => {
             recipientAddress = "sender.not.subscribed";
+            
+            allowList.push(recipientAddress);
+
             xmtpContext.message.senderAddress = recipientAddress;
         })
 
@@ -119,6 +124,20 @@ describe("Bot Handler", () => {
                 expect(subscribedAddresses).to.contain(recipientAddress);
                 expect(sentMessages).to.have.lengthOf(1);
                 expect(sentMessages[0]).to.contain("You are now subscribed");
+            })
+            
+            describe("the sender is not in the allowlist", () => {
+                beforeEach(() => {
+                    xmtpContext.message.senderAddress = "0xnotallowed";
+                })
+
+                it("denies the subscription request", async () => {
+                    await handler(xmtpContext);
+
+                    expect(subscribedAddresses).to.not.contain(xmtpContext.message.senderAddress);
+                    // protect against false positives due to bad setup
+                    expect(subscribedAddresses).to.not.contain(recipientAddress);
+                })
             })
         })
 
