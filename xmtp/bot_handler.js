@@ -12,7 +12,7 @@ export function NewBotHandler(subscriptionsService, subscriptionAllowlist) {
         if (isSubscribed) {
             switch (context.message.content.toLowerCase()) {
             case "stop":
-                await subscriptionsService.unsubscribe(context.message.senderAddress);
+                await subscriptionsService.unsubscribe(recipientAddress);
                 await context.reply("You have been unsubscribed from further notifications of free games.");
                 break;
             default:
@@ -25,7 +25,7 @@ export function NewBotHandler(subscriptionsService, subscriptionAllowlist) {
                 break;
             case "subscribe":
                 if (subscriptionAllowlist) {
-                    if (subscriptionAllowlist.indexOf(recipientAddress) < 0) {
+                    if (subscriptionAllowlist.indexOf(recipientAddress.toLowerCase()) < 0) {
                         await context.reply("Sorry, you are not authorized to subscribe to this bot. Please try again a later date and time.");
 
                         return;
