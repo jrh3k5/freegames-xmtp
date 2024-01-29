@@ -1,5 +1,7 @@
 import { Consumer } from "sqs-consumer";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
+import { getDefaultRecipients } from "../xmtp/notify/recipients.js";
+import { GameDetails } from "../freestuff/model.js";
 
 // This builds a consumer that ingests a game notification and multiplexes
 // it into multiple user notifications for that game.
@@ -7,7 +9,7 @@ export function consumeGameNotifications(sqsClient,
                                          gameSQSQueueURL, userSQSQueueURL,
                                          subscriptionsService) {
     const app = Consumer.create({
-        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "StoreURL", "OriginalPrice", "Store"],
+        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "StoreURL", "OriginalPrice", "Store", "NotifyDefaultRecipientsOnly"],
         sqs: sqsClient,
         queueUrl: gameSQSQueueURL,
         handleMessage: async (message) => {
@@ -18,51 +20,23 @@ export function consumeGameNotifications(sqsClient,
             const originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
             const store = message.MessageAttributes.Store.StringValue;
 
+            const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store)
+
+            if (message.MessageAttributes.NotifyDefaultRecipientsOnly) {
+                const defaultRecipients = getDefaultRecipients();
+                console.log(`Message is configured to message only default receipients; enqueuing message to ${defaultRecipients.length} recipients`);
+
+                const promises = defaultRecipients.map(receipientAddress => enqueueUserNotification(receipientAddress, gameDetails, sqsClient, userSQSQueueURL))
+                await Promise.all(promises);
+
+                return
+            }
+
             let subscriptionsResult = await subscriptionsService.getSubscriptions();
             do {
-                for (let i = 0; i < subscriptionsResult.recipientAddresses.length; i++) {
-                    const recipientAddress = subscriptionsResult.recipientAddresses[i];
-                    console.debug(`Notifing recipient '${recipientAddress} of the free game '${gameTitle}'`);
+                const promises = subscriptionsResult.recipientAddresses.map(recipientAddress => enqueueUserNotification(recipientAddress, gameDetails, sqsClient, userSQSQueueURL));
 
-                    const input = {
-                        QueueUrl: userSQSQueueURL,
-                        MessageAttributes: {
-                            "GameID": {
-                                DataType: "String",
-                                StringValue: gameID
-                            },
-                            "GameTitle": {
-                                DataType: "String",
-                                StringValue: gameTitle
-                            },
-                            "GameDescription": {
-                                DataType: "String",
-                                StringValue: gameDescription
-                            },
-                            "RecipientAddress": {
-                                DataType: "String",
-                                StringValue: recipientAddress
-                            },
-                            "StoreURL": {
-                                DataType: "String",
-                                StringValue: storeURL
-                            },
-                            "OriginalPrice": {
-                                DataType: "String",
-                                StringValue: originalPrice
-                            },
-                            "Store": {
-                                DataType: "String",
-                                StringValue: store
-                            }
-                        },
-                        MessageBody: "_", // placeholder to satisfy minimum requirement
-                        MessageGroupId: gameID,
-                        MessageDeduplicationId: `${gameID}-${recipientAddress}`
-                    };
-
-                    await sqsClient.send(new SendMessageCommand(input));
-                }
+                await Promise.all(promises);
     
                 subscriptionsResult = await subscriptionsService.getSubscriptions(subscriptionsResult.cursor);
             } while(subscriptionsResult.recipientAddresses.length && subscriptionsResult.cursor)
@@ -86,37 +60,46 @@ export class GameNotifier {
         this.queueURL = queueURL;
     }
 
-    async notify(gameDetails) {
+    async notify(gameDetails, notifyDefaultOnly) {
         const gameID = gameDetails.gameID;
         
+        const messageAttributes = {
+            "GameID": {
+                DataType: "String",
+                StringValue: gameID
+            },
+            "GameTitle": {
+                DataType: "String",
+                StringValue: gameDetails.gameTitle
+            },
+            "GameDescription": {
+                DataType: "String",
+                StringValue: gameDetails.gameDescription
+            },
+            "StoreURL": {
+                DataType: "String",
+                StringValue: gameDetails.url
+            },
+            "OriginalPrice": {
+                DataType: "String",
+                StringValue: `${gameDetails.originalPrice}`
+            },
+            "Store": {
+                DataType: "String",
+                StringValue: gameDetails.store
+            }
+        };
+
+        if (notifyDefaultOnly) {
+            messageAttributes["NotifyDefaultRecipientsOnly"] = {
+                DataType: "String",
+                StringValue: "true"
+            }
+        }
+
         const input = {
             QueueUrl: this.queueURL,
-            MessageAttributes: {
-                "GameID": {
-                    DataType: "String",
-                    StringValue: gameID
-                },
-                "GameTitle": {
-                    DataType: "String",
-                    StringValue: gameDetails.gameTitle
-                },
-                "GameDescription": {
-                    DataType: "String",
-                    StringValue: gameDetails.gameDescription
-                },
-                "StoreURL": {
-                    DataType: "String",
-                    StringValue: gameDetails.url
-                },
-                "OriginalPrice": {
-                    DataType: "String",
-                    StringValue: `${gameDetails.originalPrice}`
-                },
-                "Store": {
-                    DataType: "String",
-                    StringValue: gameDetails.store
-                }
-            },
+            MessageAttributes: messageAttributes,
             MessageBody: "_", // placeholder to satisfy minimum requirement
             MessageGroupId: gameID,
             MessageDeduplicationId: gameID
@@ -124,4 +107,49 @@ export class GameNotifier {
 
         await this.sqs.send(new SendMessageCommand(input));
     }
+}
+
+async function enqueueUserNotification(recipientAddress, gameDetails, sqsClient, queueUrl) {
+    const gameID = gameDetails.gameID;
+
+    const messageAttributes = {
+        "GameID": {
+            DataType: "String",
+            StringValue: gameID
+        },
+        "GameTitle": {
+            DataType: "String",
+            StringValue: gameDetails.gameTitle
+        },
+        "GameDescription": {
+            DataType: "String",
+            StringValue: gameDetails.gameDescription
+        },
+        "RecipientAddress": {
+            DataType: "String",
+            StringValue: recipientAddress
+        },
+        "StoreURL": {
+            DataType: "String",
+            StringValue: gameDetails.url
+        },
+        "OriginalPrice": {
+            DataType: "String",
+            StringValue: gameDetails.originalPrice
+        },
+        "Store": {
+            DataType: "String",
+            StringValue: gameDetails.store
+        }
+    };
+
+    const input = {
+        QueueUrl: queueUrl,
+        MessageAttributes: messageAttributes,
+        MessageBody: "_", // placeholder to satisfy minimum requirement
+        MessageGroupId: gameID,
+        MessageDeduplicationId: `${gameID}-${recipientAddress}`
+    };
+
+    await sqsClient.send(new SendMessageCommand(input));
 }
