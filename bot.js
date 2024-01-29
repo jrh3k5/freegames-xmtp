@@ -38,7 +38,7 @@ for (let i = 0; i < defaultRecipients.length; i++) {
 
 let allowList;
 if (process.env.XMTP_BOT_SUBSCRIBE_ALLOWLIST) {
-    allowList = process.env.XMTP_BOT_SUBSCRIBE_ALLOWLIST.split(",");
+    allowList = process.env.XMTP_BOT_SUBSCRIBE_ALLOWLIST.split(",").map(address => address.toLowerCase());
     console.log(`Limiting subscriptions to ${allowList.length} allowlisted addresses`)
 }
 
