@@ -53,6 +53,10 @@ To launch the bot that handles user engagement, execute:
 node bot.js
 ```
 
+## Troubleshooting
+
+The webhook can be invoked with a `notifyDefaultRecipientsOnly` option (as demonstrated in the [running locally](#running-locally) portion of this document) to only notify the configured default recipients. This allows the processing of messages but without the risk of notifying all subscribed users.
+
 ## Running Locally
 
 First, create configuration for your deployment by copying the example `.env.sample` file:
@@ -80,7 +84,7 @@ Once that is running, you can then simulate a [webhook invocation](https://docs.
 ```
 curl -i -X POST http://localhost:12345/freestuffbot.xyz/webhook \
   -H "Content-Type: application/json" \
-  -d '{ "event": "free_games", "secret": "wdaji29dJadj91jAjd9a92eDak2", "data": [ 565940 ] }'
+  -d '{ "event": "free_games", "secret": "wdaji29dJadj91jAjd9a92eDak2", "data": [ 565940 ], "notifyDefaultRecipientsOnly": true }'
 ```
 
 If the above example's game IDs are too old and are not returning any data, you can fetch the currently-listed free games using this request:

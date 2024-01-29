@@ -10,15 +10,18 @@ describe("Freestuff Webhook Handler", () => {
   let gameDetailsByID;
   let notifier;
   let notifiedGameDetails;
+  let notifiedDefaultOnly;
 
   beforeEach(() => {
     gameDetailsByID = {};
     webhookSecret = "shhhhh";
-    notifiedGameDetails = []
+    notifiedGameDetails = [];
+    notifiedDefaultOnly = [];
 
     notifier = {};
-    notifier.notify = gameDetails => {
+    notifier.notify = (gameDetails, notifyDefaultOnly) => {
       notifiedGameDetails.push(gameDetails);
+      notifiedDefaultOnly.push(notifyDefaultOnly);
       return Promise.resolve();
     };
 
@@ -91,6 +94,24 @@ describe("Freestuff Webhook Handler", () => {
           await webhookHandler(request, response);
           expect(response.statusCode).to.equal(200);
           expect(response.ended).to.be.true.to.equal(true);;
+        })
+      })
+
+      describe("the request is to only notify default recipients", () => {
+        beforeEach(() => {
+            requestBody.notifyDefaultRecipientsOnly = true;
+        })
+
+        it("generates a request to only notify the default recipients", async () => {
+            const gameID = 12345;
+            const gameDetails = new GameDetails(`${gameID}`, "A Free Game for Default Notifications Only", "Free is best", "https://free.game/")
+            gameDetailsByID[gameID] = gameDetails;
+            requestBody.data = [gameID];
+
+            await webhookHandler(request, response);
+
+            expect(notifiedGameDetails).to.contain(gameDetails);
+            expect(notifiedDefaultOnly[0]).to.be.true;
         })
       })
     })

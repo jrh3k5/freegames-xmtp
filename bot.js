@@ -6,6 +6,7 @@ import run from "@xmtp/bot-starter"
 import { NewBotHandler } from "./xmtp/bot_handler.js";
 import { CachingSubscriptionService } from "./subscriptions/caching.js";
 import { newCache } from "./cache/cache.js";
+import { getDefaultRecipients } from "./xmtp/notify/recipients.js";
 
 dotenv.config();
 
@@ -27,10 +28,7 @@ const cache = newCache();
 const cachingSubscriptionsService = new CachingSubscriptionService(dynamoDBSubscriptionsService, cache);
 
 // Load the default recipients
-let defaultRecipients = [];
-if (process.env.XMTP_BOT_DEFAULT_RECIPIENTS) {
-    defaultRecipients = process.env.XMTP_BOT_DEFAULT_RECIPIENTS.split(",");
-}
+const defaultRecipients = getDefaultRecipients();
 
 console.log(`Seeding ${defaultRecipients.length} default recipients`);
 
