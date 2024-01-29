@@ -29,6 +29,7 @@ To deploy this project, create a copy of the `.env.sample` file and fill out the
 * `FREESTUFF_API_KEY`: the API key used to make requests to the freestuffbot.xyz API
 * `KEY`: the private key to be used to sign messages sent to XMTP by the bot
 * `XMTP_BOT_DEFAULT_RECIPIENTS`: a comma-delimited list of addresses to be loaded on startup as subscribers who will receive game notifications
+* `XMTP_BOT_SUBSCRIBE_ALLOWLIST`: a comma-delimited list of addresses to which subscribing to the bot is to be limited
 
 #### Kill Switches
 

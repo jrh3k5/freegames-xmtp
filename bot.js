@@ -36,7 +36,13 @@ for (let i = 0; i < defaultRecipients.length; i++) {
     await cachingSubscriptionsService.upsertSubscription(defaultRecipients[i]);
 }
 
-const botHandler = NewBotHandler(cachingSubscriptionsService);
+let allowList;
+if (process.env.XMTP_BOT_SUBSCRIBE_ALLOWLIST) {
+    allowList = process.env.XMTP_BOT_SUBSCRIBE_ALLOWLIST.split(",");
+    console.log(`Limiting subscriptions to ${allowList.length} allowlisted addresses`)
+}
+
+const botHandler = NewBotHandler(cachingSubscriptionsService, allowList);
 
 // XMTP
 run(botHandler);

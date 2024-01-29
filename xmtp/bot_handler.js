@@ -5,7 +5,7 @@ This is powered by https://freestuffbot.xyz, so the links you receive will be re
 Message STOP at any time to stop receiving notifications.
 `;
 
-export function NewBotHandler(subscriptionsService) {
+export function NewBotHandler(subscriptionsService, subscriptionAllowlist) {
     return async (context) => {
         const recipientAddress = context.message.senderAddress;
         const isSubscribed = await subscriptionsService.isSubscribed(recipientAddress);
@@ -24,6 +24,14 @@ export function NewBotHandler(subscriptionsService) {
                 await context.reply("You requested to stop receiving notifications, but you aren't subscribed. Message SUBSCRIBE to begin receiving notifications.");
                 break;
             case "subscribe":
+                if (subscriptionAllowlist) {
+                    if (subscriptionAllowlist.indexOf(recipientAddress) < 0) {
+                        await context.reply("Sorry, you are not authorized to subscribe to this bot. Please try again a later date and time.");
+
+                        return;
+                    }
+                }
+
                 await subscriptionsService.upsertSubscription(recipientAddress);
                 await context.reply("You are now subscribed to receive notifications of free games. Look for messages from this account in your inbox!");
                 break;
