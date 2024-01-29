@@ -14,7 +14,10 @@ export function newUserNotificationHandler(notifier, killSwitch) {
         const gameTitle = message.MessageAttributes.GameTitle.StringValue;
         const gameDescription = message.MessageAttributes.GameDescription.StringValue;
         const storeURL = message.MessageAttributes.StoreURL.StringValue;
-        const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL);
+        const originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
+        const store = message.MessageAttributes.Store.StringValue;
+
+        const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store);
         await notifier.notify(recipientAddress, gameDetails);
     };
 }
@@ -22,7 +25,7 @@ export function newUserNotificationHandler(notifier, killSwitch) {
 // consumeUserNotifications consumes user notifications enqueued in the given URL.
 export function consumeUserNotifications(sqsClient, sqsQueueURL, messageHandler) {
     const app = Consumer.create({
-        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "RecipientAddress", "StoreURL"],
+        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "RecipientAddress", "StoreURL", "OriginalPrice", "Store"],
         sqs: sqsClient,
         queueUrl: sqsQueueURL,
         handleMessage: messageHandler

@@ -9,11 +9,17 @@ export class DynamoDBSubscriptionService {
 
     // isSubscribed determines if the given recipient address has subscribed.
     async isSubscribed(recipientAddress) {
+        if (!recipientAddress) {
+            return false
+        }
+
+        const normalizedAddress = recipientAddress.toLowerCase();
+
         const input = {
             TableName: SubscriptionsTableName,
             Key: {
                 "recipient_address": {
-                    S: recipientAddress.toLowerCase()
+                    S: normalizedAddress
                 }
             }
         };
@@ -53,11 +59,17 @@ export class DynamoDBSubscriptionService {
 
     // unsubscribe removes the given address from being subscribed to notifications.
     async unsubscribe(recipientAddress) {
+        if (!recipientAddress) {
+            return
+        }
+
+        const normalizedAddress = recipientAddress.toLowerCase();
+
         const input = {
             TableName: SubscriptionsTableName,
             Key: {
                 "recipient_address": {
-                    S: recipientAddress.toLowerCase()
+                    S: normalizedAddress
                 }
             }
         };
@@ -68,11 +80,17 @@ export class DynamoDBSubscriptionService {
     // upsertSubscription will create a subscription for the given address if it does not already exist
     // and update any data on the existing record if a record does already exist.
     async upsertSubscription(recipientAddress) {
+        if (!recipientAddress) {
+            return
+        }
+        
+        const normalizedAddress = recipientAddress.toLowerCase();
+
         const input = {
             TableName: SubscriptionsTableName,
             Item: {
                 "recipient_address": {
-                    S: recipientAddress.toLowerCase()
+                    S: normalizedAddress
                 },
                 "subscription_start_date": {
                     N: `${new Date().getTime()}`
@@ -85,7 +103,7 @@ export class DynamoDBSubscriptionService {
             await this.dynamoDBClient.send(new PutItemCommand(input));
         } catch(error) {
             if ((error["__type"] || "").endsWith("ConditionalCheckFailedException")) {
-                console.debug(`Recipient '${recipientAddress}' is already subscribed`);
+                console.debug(`Recipient '${normalizedAddress}' is already subscribed`);
                 return;
             }
 

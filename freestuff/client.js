@@ -30,12 +30,14 @@ export class FreestuffClient {
                     if (!gameDetails) {
                         reject(`no game details found in response for game ID ${gameID}`);
                     }
-
+                    
                     const gameTitle = gameDetails.title;
                     const gameDescription = gameDetails.description;
                     const gameURL = gameDetails.urls.default;
+                    const originalPrice = gameDetails["org_price"].dollar;
+                    const store = gameDetails.store;
 
-                    resolve(new GameDetails(`${gameID}`, gameTitle, gameDescription, gameURL));
+                    resolve(new GameDetails(`${gameID}`, gameTitle, gameDescription, gameURL, originalPrice, store));
                 }
             }).catch(reject);
         });

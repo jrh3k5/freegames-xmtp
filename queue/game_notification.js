@@ -7,7 +7,7 @@ export function consumeGameNotifications(sqsClient,
                                          gameSQSQueueURL, userSQSQueueURL,
                                          subscriptionsService) {
     const app = Consumer.create({
-        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "StoreURL"],
+        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "StoreURL", "OriginalPrice", "Store"],
         sqs: sqsClient,
         queueUrl: gameSQSQueueURL,
         handleMessage: async (message) => {
@@ -15,6 +15,8 @@ export function consumeGameNotifications(sqsClient,
             const gameTitle = message.MessageAttributes.GameTitle.StringValue;
             const gameDescription = message.MessageAttributes.GameDescription.StringValue;
             const storeURL = message.MessageAttributes.StoreURL.StringValue;
+            const originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
+            const store = message.MessageAttributes.Store.StringValue;
 
             let subscriptionsResult = await subscriptionsService.getSubscriptions();
             do {
@@ -44,6 +46,14 @@ export function consumeGameNotifications(sqsClient,
                             "StoreURL": {
                                 DataType: "String",
                                 StringValue: storeURL
+                            },
+                            "OriginalPrice": {
+                                DataType: "String",
+                                StringValue: originalPrice
+                            },
+                            "Store": {
+                                DataType: "String",
+                                StringValue: store
                             }
                         },
                         MessageBody: "_", // placeholder to satisfy minimum requirement
@@ -97,6 +107,14 @@ export class GameNotifier {
                 "StoreURL": {
                     DataType: "String",
                     StringValue: gameDetails.url
+                },
+                "OriginalPrice": {
+                    DataType: "String",
+                    StringValue: `${gameDetails.originalPrice}`
+                },
+                "Store": {
+                    DataType: "String",
+                    StringValue: gameDetails.store
                 }
             },
             MessageBody: "_", // placeholder to satisfy minimum requirement
