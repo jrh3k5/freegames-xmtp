@@ -10,12 +10,21 @@ export function NewBotHandler(subscriptionsService, subscriptionAllowlist) {
         const recipientAddress = context.message.senderAddress;
         const isSubscribed = await subscriptionsService.isSubscribed(recipientAddress);
         if (isSubscribed) {
-            switch (context.message.content.toLowerCase()) {
+            const normalizedMessage = context.message.content.trim().toLowerCase();
+            if (!normalizedMessage) {
+                // XMTP can sometimes trigger an echo because of a message sent out by the bot account,
+                // so don't respond to these blank echoes
+                return;
+            }
+
+            switch (normalizedMessage) {
             case "stop":
                 await subscriptionsService.unsubscribe(recipientAddress);
                 await context.reply("You have been unsubscribed from further notifications of free games.");
                 break;
             default:
+                console.debug("Received unhandled message from subscribed user:", normalizedMessage);
+                
                 await context.reply("Sorry, I don't understand. You can message STOP at any time to stop receiving notifications.");
             }
         } else {

@@ -71,7 +71,7 @@ describe("Bot Handler", () => {
             })
         })
 
-        describe("the message is not recogniezd", () => {
+        describe("the message is not recognized", () => {
             beforeEach(() => {
                 xmtpContext.message.content = "this message is not handled";
             })
@@ -83,6 +83,18 @@ describe("Bot Handler", () => {
                 expect(subscribedAddresses).to.contain(recipientAddress);
                 expect(sentMessages).to.have.lengthOf(1);
                 expect(sentMessages[0]).to.contain("Sorry, I don't understand");
+            })
+
+            describe("the message is blank", () => {
+                beforeEach(() => {
+                    xmtpContext.message.content = "  ";
+                })
+
+                it("does not sent a response back to the user", async () => {
+                    await handler(xmtpContext);
+
+                    expect(sentMessages).to.be.empty;
+                })
             })
         })
     })
