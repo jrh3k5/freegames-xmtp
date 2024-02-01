@@ -7,6 +7,12 @@ Message STOP at any time to stop receiving notifications.
 
 export function NewBotHandler(subscriptionsService, subscriptionAllowlist) {
     return async (context) => {
+        if (context.message.recipientAddress == context.message.senderAddress) {
+            // XMTP will echo back the message it sent, it seems.
+            // In that case, ignore it.
+            return;
+        }
+        
         const recipientAddress = context.message.senderAddress;
         const isSubscribed = await subscriptionsService.isSubscribed(recipientAddress);
         if (isSubscribed) {

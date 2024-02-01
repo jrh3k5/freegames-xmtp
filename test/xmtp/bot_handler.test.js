@@ -49,11 +49,16 @@ describe("Bot Handler", () => {
     })
 
     describe("the sender is subscribed", () => {
+        let botAddress;
         let recipientAddress;
 
         beforeEach(() => {
+            botAddress = "bot.address";
+            xmtpContext.message.recipientAddress = botAddress;
+
             recipientAddress = "sender.is.subscribed";
             xmtpContext.message.senderAddress = recipientAddress;
+            
             subscribedAddresses.push(recipientAddress);
         })
 
@@ -91,6 +96,18 @@ describe("Bot Handler", () => {
                 })
 
                 it("does not sent a response back to the user", async () => {
+                    await handler(xmtpContext);
+
+                    expect(sentMessages).to.be.empty;
+                })
+            })
+
+            describe("the message is from the bot", () => {
+                beforeEach(() => {
+                  xmtpContext.message.senderAddress = botAddress;  
+                })
+
+                it("does not response to the user", async () => {
                     await handler(xmtpContext);
 
                     expect(sentMessages).to.be.empty;
