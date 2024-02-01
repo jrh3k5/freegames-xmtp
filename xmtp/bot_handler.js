@@ -29,8 +29,6 @@ export function NewBotHandler(subscriptionsService, subscriptionAllowlist) {
                 await context.reply("You have been unsubscribed from further notifications of free games.");
                 break;
             default:
-                console.debug("Received unhandled message from subscribed user:", normalizedMessage);
-                
                 await context.reply("Sorry, I don't understand. You can message STOP at any time to stop receiving notifications.");
             }
         } else {
