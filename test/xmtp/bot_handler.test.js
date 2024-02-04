@@ -88,6 +88,8 @@ describe("Bot Handler", () => {
                 expect(subscribedAddresses).to.contain(recipientAddress);
                 expect(sentMessages).to.have.lengthOf(1);
                 expect(sentMessages[0]).to.contain("Sorry, I don't understand");
+                // The message should include a link telling them where to go log issues.
+                expect(sentMessages[0]).to.contain("https://github.com/jrh3k5/freegames-xmtp/issues");
             })
 
             describe("the message is blank", () => {
