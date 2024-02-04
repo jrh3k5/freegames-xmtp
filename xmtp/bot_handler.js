@@ -5,6 +5,11 @@ This is powered by https://freestuffbot.xyz, so the links you receive will be re
 Message STOP at any time to stop receiving notifications.
 `;
 
+const unhandledInputResponse = `Sorry, I don't understand. You can message STOP at any time to stop receiving notifications.
+\n
+If you are encountering an issue with this bot, please log an issue at https://github.com/jrh3k5/freegames-xmtp/issues
+`;
+
 export function NewBotHandler(subscriptionsService, subscriptionAllowlist) {
     return async (context) => {
         if (context.message.recipientAddress == context.message.senderAddress) {
@@ -29,7 +34,7 @@ export function NewBotHandler(subscriptionsService, subscriptionAllowlist) {
                 await context.reply("You have been unsubscribed from further notifications of free games.");
                 break;
             default:
-                await context.reply("Sorry, I don't understand. You can message STOP at any time to stop receiving notifications.");
+                await context.reply(unhandledInputResponse);
             }
         } else {
             switch (context.message.content.toLowerCase()) {
