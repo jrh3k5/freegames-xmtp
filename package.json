@@ -23,7 +23,7 @@
     "@aws-sdk/client-sqs": "^3.490.0",
     "@xmtp/bot-starter": "^1.1.4",
     "@xmtp/xmtp-js": "^11.3.8",
-    "axios": "^1.6.5",
+    "axios": "^1.6.7",
     "chai": "^5.0.3",
     "dotenv": "^16.4.1",
     "ethers": "^6.10.0",
