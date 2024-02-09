@@ -11,7 +11,11 @@ export class FreestuffClient {
     // GetGameDetails looks up the game details for the given game ID.
     // This returns a GameDetails object.
     async getGameDetails(gameID) {
-        const response = axios({
+        if (!Number.isInteger(gameID)) {
+            throw 'game ID must be an integer';
+        }
+
+        const response = await axios({
             url: `https://api.freestuffbot.xyz/v1/game/${gameID}/info`,
             method: "get",
             headers: {
