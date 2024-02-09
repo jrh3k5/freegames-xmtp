@@ -76,32 +76,32 @@ describe("Bot Handler", () => {
             })
         })
 
-        describe("the message is not recognized", () => {
+        describe("the message is 'help'", () => {
             beforeEach(() => {
-                xmtpContext.message.content = "this message is not handled";
+                xmtpContext.message.content = "help";
             })
 
-            it("tells the user that the bot doesn't understand", async () => {
+            it("tells the user where they can submit a bug", async () => {
                 await handler(xmtpContext);
 
                 // the sender should not have been unsubscribed
                 expect(subscribedAddresses).to.contain(recipientAddress);
                 expect(sentMessages).to.have.lengthOf(1);
-                expect(sentMessages[0]).to.contain("Sorry, I don't understand");
-                // The message should include a link telling them where to go log issues.
                 expect(sentMessages[0]).to.contain("https://github.com/jrh3k5/freegames-xmtp/issues");
             })
+        })
 
-            describe("the message is blank", () => {
-                beforeEach(() => {
-                    xmtpContext.message.content = "  ";
-                })
+        describe("the message is not recognized", () => {
+            beforeEach(() => {
+                xmtpContext.message.content = "this message is not handled";
+            })
 
-                it("does not sent a response back to the user", async () => {
-                    await handler(xmtpContext);
+            it("does not respond to the user", async () => {
+                await handler(xmtpContext);
 
-                    expect(sentMessages).to.be.empty;
-                })
+                // the sender should not have been unsubscribed
+                expect(subscribedAddresses).to.contain(recipientAddress);
+                expect(sentMessages).to.be.empty;
             })
 
             describe("the message is from the bot", () => {
