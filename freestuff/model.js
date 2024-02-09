@@ -1,11 +1,12 @@
 export class GameDetails {
-    constructor(gameID, gameTitle, gameDescription, url, originalPrice, store) {
+    constructor(gameID, gameTitle, gameDescription, url, originalPrice, store, currentPrice) {
         this.gameID = gameID;
         this.gameTitle = gameTitle;
         this.gameDescription = gameDescription;
         this.url = url;
         this.originalPrice = originalPrice;
         this.store = store;
+        this.currentPrice = currentPrice;
     }
 }
 
