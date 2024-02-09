@@ -44,7 +44,8 @@ export function NewWebhookHandler(webhookSecret, freestuffClient, notifier, isKi
         try {
             const detailPromises = requestBody.data.map(gameID => freestuffClient.getGameDetails(gameID));
             const allGameDetails = await Promise.all(detailPromises);
-            const notifyPromises = allGameDetails.map(gameDetails => notifier.notify(gameDetails, requestBody.notifyDefaultRecipientsOnly));
+            const freeGameDetails = allGameDetails.filter(g => !g.currentPrice);
+            const notifyPromises = freeGameDetails.map(gameDetails => notifier.notify(gameDetails, requestBody.notifyDefaultRecipientsOnly));
             await Promise.all(notifyPromises);
         } catch(error) {
             console.error("Unexpected error notifying about games:", error)

@@ -80,7 +80,7 @@ describe("Freestuff Webhook Handler", () => {
 
       it("sends out a notification of the free game", async () => {
         const gameID = 12345;
-        const gameDetails = new GameDetails(`${gameID}`, "A Free Game", "Free is best", "https://free.game/")
+        const gameDetails = new GameDetails(`${gameID}`, "A Free Game", "Free is best", "https://free.game/", 59.99, "gog", 0.00);
         gameDetailsByID[gameID] = gameDetails;
         requestBody.data = [gameID];
 
@@ -93,7 +93,22 @@ describe("Freestuff Webhook Handler", () => {
         it("silently drops the request", async () => {
           await webhookHandler(request, response);
           expect(response.statusCode).to.equal(200);
-          expect(response.ended).to.be.true.to.equal(true);;
+          expect(response.ended).to.be.true.to.equal(true);
+
+          expect(notifiedGameDetails).to.be.empty;
+        })
+      })
+
+      describe("the current price is not free", () => {
+        it("silently drops the request", async () => {
+            const gameID = 12345;
+            const gameDetails = new GameDetails(`${gameID}`, "A Not-Free Game", "Free is best", "https://not.free.game/", 49.99, "steam", 19.99);
+            gameDetailsByID[gameID] = gameDetails;
+            requestBody.data = [gameID];
+
+            await webhookHandler(request, response);
+
+            expect(notifiedGameDetails).to.be.empty;
         })
       })
 
@@ -143,7 +158,7 @@ describe("Freestuff Webhook Handler", () => {
         const killSwitched = NewWebhookHandler(webhookSecret, freestuffClient, notifier, true);
   
         const gameID = 98765;
-        const gameDetails = new GameDetails(`${gameID}`, "No One Will Know About This", "It Is Kill-Switched", "https://kill.switch/")
+        const gameDetails = new GameDetails(`${gameID}`, "No One Will Know About This", "It Is Kill-Switched", "https://kill.switch/", 29.99, "gog", 0.00);
         gameDetailsByID[gameID] = gameDetails;
         requestBody.event = "free_games";
         requestBody.data = [gameID];
