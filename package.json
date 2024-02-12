@@ -33,6 +33,6 @@
     "sqs-consumer": "^8.1.5"
   },
   "devDependencies": {
-    "mocha": "^10.2.0"
+    "mocha": "^10.3.0"
   }
 }
