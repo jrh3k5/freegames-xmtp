@@ -13,7 +13,7 @@ export class CachingSubscriptionService {
         }
 
         const isSubscribed = await this.delegateService.isSubscribed(recipientAddress);
-        this.cache.set(cacheKey, isSubscribed);
+        await this.cache.set(cacheKey, isSubscribed);
         return isSubscribed;
     }
 
@@ -23,17 +23,17 @@ export class CachingSubscriptionService {
     }
 
     async unsubscribe(recipientAddress) {
-        this.cache.del(`subscribed-${recipientAddress}`);
+        await this.cache.del(`subscribed-${recipientAddress}`);
         return await this.delegateService.unsubscribe(recipientAddress);
     }
 
     async upsertSubscription(recipientAddress) {
         const cacheKey = `subscribed-${recipientAddress}`;
-        const cached = this.cache.get(cacheKey);
+        const cached = await this.cache.get(cacheKey);
         if (cached != undefined && !cached) {
             // only delete the cached data if we previously cached
             // that the user is not subscribed
-            this.cache.del(cacheKey);
+            await this.cache.del(cacheKey);
         }
         return await this.delegateService.upsertSubscription(recipientAddress);
     }

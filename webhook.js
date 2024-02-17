@@ -13,6 +13,8 @@ import { Notifier } from "./xmtp/notify/notifier.js"
 import { NewWebhookHandler } from "./http_server/handler.js";
 import { AttachmentCodec } from "@xmtp/content-type-remote-attachment";
 import { Retriever } from "./images/metadata/retriever.js";
+import { newCache } from "./cache/cache.js";
+import { CachingRetriever } from "./images/metadata/caching_retriever.js";
 
 dotenv.config();
 
@@ -34,6 +36,12 @@ if (results.state !== 'SUCCESS') {
 }
 const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
 
+const cache = newCache();
+
+// Image metadata resolution
+const imageMetadataRetriever = new Retriever();
+const cachingImageMetadataRetriever = new CachingRetriever(imageMetadataRetriever, cache);
+
 // SQS
 const sqsClient = new SQSClient(awsConfig);
 const gameNotifier = new GameNotifier(sqsClient, gameNotificationQueueURL);
@@ -45,8 +53,7 @@ const xmtpClient = await Client.create(signer, {
     codecs: [new AttachmentCodec()]
 });
 
-const imageMetadataRetriever = new Retriever();
-const xmtpNotifier = new Notifier(xmtpClient, imageMetadataRetriever);
+const xmtpNotifier = new Notifier(xmtpClient, cachingImageMetadataRetriever);
 
 // Webhook
 const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
