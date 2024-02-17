@@ -3,7 +3,7 @@
 export const NoGameImageURL = "no_game_image_supplied";
 
 export class GameDetails {
-    constructor(gameID, gameTitle, gameDescription, url, originalPrice, store, currentPrice, imageURL) {
+    constructor(gameID, gameTitle, gameDescription, url, originalPrice, store, currentPrice, imageURL, expiryDate) {
         this.gameID = gameID;
         this.gameTitle = gameTitle;
         this.gameDescription = gameDescription;
@@ -12,6 +12,7 @@ export class GameDetails {
         this.store = store;
         this.currentPrice = currentPrice;
         this.imageURL = imageURL || NoGameImageURL;
+        this.expiryDate = expiryDate;
     }
 }
 

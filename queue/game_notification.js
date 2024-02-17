@@ -9,7 +9,18 @@ export function consumeGameNotifications(sqsClient,
                                          gameSQSQueueURL, userSQSQueueURL,
                                          subscriptionsService) {
     const app = Consumer.create({
-        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "StoreURL", "OriginalPrice", "Store", "NotifyDefaultRecipientsOnly", "CurrentPrice", "ImageURL"],
+        messageAttributeNames: [
+            "GameID", 
+            "GameTitle", 
+            "GameDescription", 
+            "StoreURL", 
+            "OriginalPrice", 
+            "Store", 
+            "NotifyDefaultRecipientsOnly", 
+            "CurrentPrice", 
+            "ImageURL",
+            "ExpiryDate"
+        ],
         sqs: sqsClient,
         queueUrl: gameSQSQueueURL,
         handleMessage: async (message) => {
@@ -22,7 +33,12 @@ export function consumeGameNotifications(sqsClient,
             const currentPrice = message.MessageAttributes.CurrentPrice.StringValue;
             const imageURL = message.MessageAttributes.ImageURL.StringValue;
 
-            const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store, currentPrice, imageURL);
+            let expiryDate;
+            if (message.MessageAttributes.ExpiryDate) {
+                expiryDate = new Date(message.MessageAttributes.ExpiryDate.StringValue);
+            }
+
+            const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store, currentPrice, imageURL, expiryDate);
 
             if (message.MessageAttributes.NotifyDefaultRecipientsOnly) {
                 const defaultRecipients = getDefaultRecipients();
@@ -107,6 +123,13 @@ export class GameNotifier {
             }
         }
 
+        if (gameDetails.expiryDate) {
+            messageAttributes["ExpiryDate"] = {
+                DataType: "String",
+                StringValue: gameDetails.expiryDate.toISOString()
+            }
+        }
+
         const input = {
             QueueUrl: this.queueURL,
             MessageAttributes: messageAttributes,
@@ -160,6 +183,13 @@ async function enqueueUserNotification(recipientAddress, gameDetails, sqsClient,
             StringValue: gameDetails.imageURL,
         }
     };
+
+    if (gameDetails.expiryDate) {
+        messageAttributes["ExpiryDate"] = {
+            DataType: "String",
+            StringValue: gameDetails.expiryDate.toISOString()
+        }
+    }
 
     const input = {
         QueueUrl: queueUrl,
