@@ -42,7 +42,12 @@ export class FreestuffClient {
         const store = gameDetails.store;
         const currentPrice = gameDetails["price"].dollar;
         const imageURL = gameDetails["thumbnail"].blank;
+        let expiryDate;
+        if (gameDetails.until) {
+            // .until is seconds since UNIX epoch, so convert to milliseconds
+            expiryDate = new Date(gameDetails.until * 1000);
+        }
 
-        return new GameDetails(`${gameID}`, gameTitle, gameDescription, gameURL, originalPrice, store, currentPrice, imageURL);
+        return new GameDetails(`${gameID}`, gameTitle, gameDescription, gameURL, originalPrice, store, currentPrice, imageURL, expiryDate);
     }
 }

@@ -50,7 +50,7 @@ describe("Notifier", () => {
             await notifier.notify(receipientAddress, gameDetails);
 
             expect(sentMessages).to.have.lengthOf(1);
-            expect(sentMessages[0].messageContent).to.contain("Free game (originally $19.99):")
+            expect(sentMessages[0].messageContent).to.contain("Free game forever (originally $19.99):")
         })
 
         describe("there is no price", () => {
@@ -63,7 +63,7 @@ describe("Notifier", () => {
                 await notifier.notify(receipientAddress, gameDetails);
     
                 expect(sentMessages).to.have.lengthOf(1);
-                expect(sentMessages[0].messageContent).to.not.contain("Free game (originally");
+                expect(sentMessages[0].messageContent).to.not.contain("Free game forever (originally");
             })
         })
 
@@ -88,6 +88,18 @@ describe("Notifier", () => {
                 expect(sentMessages).to.have.lengthOf(2);
                 expect(sentMessages[0].messageContent).to.equal(imageMetadatum);
                 expect(sentMessages[0].options.contentType).to.equal(ContentTypeAttachment);
+            })
+        })
+
+        describe("the game details have an expiry date", () => {
+            it("adds the expiration date into the outbound message", async () => {
+                gameDetails.expiryDate = new Date(1707674400000);
+
+                const receipientAddress = "0x135711";
+                await notifier.notify(receipientAddress, gameDetails);
+    
+                expect(sentMessages).to.have.lengthOf(1);
+                expect(sentMessages[0].messageContent).to.not.contain("Free game until Thursday, Jan 18 (originally");
             })
         })
     })

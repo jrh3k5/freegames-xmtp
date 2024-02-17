@@ -22,7 +22,15 @@ export class Notifier {
         const storeName = getHumanReadableStoreName(gameDetails.store);
         let message = `${gameDetails.gameTitle}\n\nGet it from ${storeName} here: ${gameDetails.url}\n\nIf this link doesn't open properly in your app's embedded browser, try copying the link directly into your phone's browser.`;
         if (gameDetails.originalPrice) {
-            message = `Free game (originally \$${gameDetails.originalPrice}): ${message}`;
+            let expirationString = "forever";
+            if (gameDetails.expiryDate) {
+                expirationString = "until " + gameDetails.expiryDate.toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    month: 'short',
+                    day: 'numeric',
+                });
+            }
+            message = `Free game ${expirationString} (originally \$${gameDetails.originalPrice}): ${message}`;
         }
         await conversation.send(message);
     }
