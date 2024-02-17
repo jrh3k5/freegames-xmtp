@@ -11,6 +11,7 @@ import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 import { SQSClient } from "@aws-sdk/client-sqs";
 import { Notifier } from "./xmtp/notify/notifier.js"
 import { NewWebhookHandler } from "./http_server/handler.js";
+import { AttachmentCodec } from "@xmtp/content-type-remote-attachment";
 
 dotenv.config();
 
@@ -38,25 +39,28 @@ const gameNotifier = new GameNotifier(sqsClient, gameNotificationQueueURL);
 
 // XMTP
 const signer = new Wallet(process.env.KEY);
-Client.create(signer, { env: process.env.XMTP_ENV }).then(xmtpClient => {
-    const xmtpNotifier = new Notifier(xmtpClient);
-    
-    // Webhook
-    const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
-    const webhookHandler = NewWebhookHandler(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, gameNotifier, process.env.KILL_SWITCH_WEBHOOK);
-    const httpServer = buildWebhookServer(webhookHandler);
+const xmtpClient = await Client.create(signer, { 
+    env: process.env.XMTP_ENV,
+    codecs: [new AttachmentCodec()]
+});
+ 
+const xmtpNotifier = new Notifier(xmtpClient);
 
-    // consume game notifications
-    consumeGameNotifications(sqsClient, gameNotificationQueueURL, userNotificationQueueURL, subscriptionsService);
+// Webhook
+const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
+const webhookHandler = NewWebhookHandler(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, gameNotifier, process.env.KILL_SWITCH_WEBHOOK);
+const httpServer = buildWebhookServer(webhookHandler);
 
-    const userNotificationsHandler = newUserNotificationHandler(xmtpNotifier, process.env.KILL_SWITCH_XMTP_MESSAGES);
-    consumeUserNotifications(sqsClient, userNotificationQueueURL, userNotificationsHandler);
-    
-    httpServer.listen(process.env.FREESTUFF_WEBHOOK_PORT, (err) => {
-        if (err) {
-            throw err;
-        }
-    
-        console.log(`Running webhook on port ${process.env.FREESTUFF_WEBHOOK_PORT}`);
-    });
-}).catch(err => console.error("Failed to initialize XMTP client", err));
+// consume game notifications
+consumeGameNotifications(sqsClient, gameNotificationQueueURL, userNotificationQueueURL, subscriptionsService);
+
+const userNotificationsHandler = newUserNotificationHandler(xmtpNotifier, process.env.KILL_SWITCH_XMTP_MESSAGES);
+consumeUserNotifications(sqsClient, userNotificationQueueURL, userNotificationsHandler);
+
+httpServer.listen(process.env.FREESTUFF_WEBHOOK_PORT, (err) => {
+    if (err) {
+        throw err;
+    }
+
+    console.log(`Running webhook on port ${process.env.FREESTUFF_WEBHOOK_PORT}`);
+});

@@ -80,7 +80,7 @@ describe("Freestuff Webhook Handler", () => {
 
       it("sends out a notification of the free game", async () => {
         const gameID = 12345;
-        const gameDetails = new GameDetails(`${gameID}`, "A Free Game", "Free is best", "https://free.game/", 59.99, "gog", 0.00);
+        const gameDetails = new GameDetails(`${gameID}`, "A Free Game", "Free is best", "https://free.game/", 59.99, "gog", 0.00, "https://gamedetails/thumb.png");
         gameDetailsByID[gameID] = gameDetails;
         requestBody.data = [gameID];
 
@@ -102,7 +102,7 @@ describe("Freestuff Webhook Handler", () => {
       describe("the current price is not free", () => {
         it("silently drops the request", async () => {
             const gameID = 12345;
-            const gameDetails = new GameDetails(`${gameID}`, "A Not-Free Game", "Free is best", "https://not.free.game/", 49.99, "steam", 19.99);
+            const gameDetails = new GameDetails(`${gameID}`, "A Not-Free Game", "Free is best", "https://not.free.game/", 49.99, "steam", 19.99, "https://gamedetails/thumb.png");
             gameDetailsByID[gameID] = gameDetails;
             requestBody.data = [gameID];
 
@@ -119,7 +119,7 @@ describe("Freestuff Webhook Handler", () => {
 
         it("generates a request to only notify the default recipients", async () => {
             const gameID = 12345;
-            const gameDetails = new GameDetails(`${gameID}`, "A Free Game for Default Notifications Only", "Free is best", "https://free.game/")
+            const gameDetails = new GameDetails(`${gameID}`, "A Free Game for Default Notifications Only", "Free is best", "https://free.game/", 29.99, "steam", 0.00, "https://gamedetails/thumb.png");
             gameDetailsByID[gameID] = gameDetails;
             requestBody.data = [gameID];
 
@@ -158,7 +158,7 @@ describe("Freestuff Webhook Handler", () => {
         const killSwitched = NewWebhookHandler(webhookSecret, freestuffClient, notifier, true);
   
         const gameID = 98765;
-        const gameDetails = new GameDetails(`${gameID}`, "No One Will Know About This", "It Is Kill-Switched", "https://kill.switch/", 29.99, "gog", 0.00);
+        const gameDetails = new GameDetails(`${gameID}`, "No One Will Know About This", "It Is Kill-Switched", "https://kill.switch/", 29.99, "gog", 0.00, "https://gamedetails/thumb.png");
         gameDetailsByID[gameID] = gameDetails;
         requestBody.event = "free_games";
         requestBody.data = [gameID];

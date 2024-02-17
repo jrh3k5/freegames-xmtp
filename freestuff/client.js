@@ -41,7 +41,8 @@ export class FreestuffClient {
         const originalPrice = gameDetails["org_price"].dollar;
         const store = gameDetails.store;
         const currentPrice = gameDetails["price"].dollar;
+        const imageURL = gameDetails["thumbnail"].blank;
 
-        return new GameDetails(`${gameID}`, gameTitle, gameDescription, gameURL, originalPrice, store, currentPrice);
+        return new GameDetails(`${gameID}`, gameTitle, gameDescription, gameURL, originalPrice, store, currentPrice, imageURL);
     }
 }
