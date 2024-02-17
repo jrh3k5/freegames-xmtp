@@ -1,25 +1,37 @@
 import { expect } from "chai";
 import { Notifier } from "../../../xmtp/notify/notifier.js";
+import { ContentTypeAttachment } from "@xmtp/content-type-remote-attachment";
 
 describe("Notifier", () => {
     let xmtpClient;
+    let imageMetadataRetriever;
     let sentMessages;
     let notifier;
+    let imageMetadata;
 
     beforeEach(() => {
         sentMessages = [];
+        imageMetadata = {};
 
         xmtpClient = {};
         xmtpClient.conversations = {};
         xmtpClient.conversations.newConversation = async () => {
             const conversation = {};
-            conversation.send = async (message) => {
-                sentMessages.push(message);
+            conversation.send = async (message, options) => {
+                sentMessages.push({
+                    messageContent: message,
+                    options: options
+                });
             };
             return conversation;
         };
 
-        notifier = new Notifier(xmtpClient);
+        imageMetadataRetriever = {};
+        imageMetadataRetriever.getMetadata = async (imageURL) => {
+            return imageMetadata[imageURL];
+        }
+
+        notifier = new Notifier(xmtpClient, imageMetadataRetriever);
     })
 
     describe("notify", () => {
@@ -38,7 +50,7 @@ describe("Notifier", () => {
             await notifier.notify(receipientAddress, gameDetails);
 
             expect(sentMessages).to.have.lengthOf(1);
-            expect(sentMessages[0]).to.contain("Free game (originally $19.99):")
+            expect(sentMessages[0].messageContent).to.contain("Free game (originally $19.99):")
         })
 
         describe("there is no price", () => {
@@ -51,7 +63,31 @@ describe("Notifier", () => {
                 await notifier.notify(receipientAddress, gameDetails);
     
                 expect(sentMessages).to.have.lengthOf(1);
-                expect(sentMessages[0]).to.not.contain("Free game (originally");
+                expect(sentMessages[0].messageContent).to.not.contain("Free game (originally");
+            })
+        })
+
+        describe("there is an image URL", () => {
+            let imageMetadatum;
+
+            beforeEach(() => {
+                const imageURL = "http://game.img/thumb.png";
+
+                imageMetadatum = {
+                    filename: "game_image.png",
+                }
+
+                gameDetails.imageURL = imageURL;
+                imageMetadata[imageURL] = imageMetadatum
+            })
+
+            it("sends out the image as a content attachment first", async () => {
+                const receipientAddress = "0x246810";
+                await notifier.notify(receipientAddress, gameDetails);
+
+                expect(sentMessages).to.have.lengthOf(2);
+                expect(sentMessages[0].messageContent).to.equal(imageMetadatum);
+                expect(sentMessages[0].options.contentType).to.equal(ContentTypeAttachment);
             })
         })
     })

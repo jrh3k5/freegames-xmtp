@@ -9,7 +9,7 @@ export function consumeGameNotifications(sqsClient,
                                          gameSQSQueueURL, userSQSQueueURL,
                                          subscriptionsService) {
     const app = Consumer.create({
-        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "StoreURL", "OriginalPrice", "Store", "NotifyDefaultRecipientsOnly"],
+        messageAttributeNames: ["GameID", "GameTitle", "GameDescription", "StoreURL", "OriginalPrice", "Store", "NotifyDefaultRecipientsOnly", "CurrentPrice", "ImageURL"],
         sqs: sqsClient,
         queueUrl: gameSQSQueueURL,
         handleMessage: async (message) => {
@@ -19,8 +19,10 @@ export function consumeGameNotifications(sqsClient,
             const storeURL = message.MessageAttributes.StoreURL.StringValue;
             const originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
             const store = message.MessageAttributes.Store.StringValue;
+            const currentPrice = message.MessageAttributes.CurrentPrice.StringValue;
+            const imageURL = message.MessageAttributes.ImageURL.StringValue;
 
-            const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store)
+            const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store, currentPrice, imageURL);
 
             if (message.MessageAttributes.NotifyDefaultRecipientsOnly) {
                 const defaultRecipients = getDefaultRecipients();
@@ -87,6 +89,14 @@ export class GameNotifier {
             "Store": {
                 DataType: "String",
                 StringValue: gameDetails.store
+            },
+            "CurrentPrice": {
+                DataType: "String",
+                StringValue: `${gameDetails.currentPrice}`
+            },
+            "ImageURL": {
+                DataType: "String",
+                StringValue: gameDetails.imageURL
             }
         };
 
@@ -140,6 +150,14 @@ async function enqueueUserNotification(recipientAddress, gameDetails, sqsClient,
         "Store": {
             DataType: "String",
             StringValue: gameDetails.store
+        },
+        "CurrentPrice": {
+            DataType: "String",
+            StringValue: `${gameDetails.currentPrice}`
+        },
+        "ImageURL": {
+            DataType: "String",
+            StringValue: gameDetails.imageURL,
         }
     };
 

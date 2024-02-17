@@ -1,5 +1,9 @@
+// This is a special value to provide a non-blank image URL to SQS while allowing it to be understood
+// if a usable image URL was actually provided.
+export const NoGameImageURL = "no_game_image_supplied";
+
 export class GameDetails {
-    constructor(gameID, gameTitle, gameDescription, url, originalPrice, store, currentPrice) {
+    constructor(gameID, gameTitle, gameDescription, url, originalPrice, store, currentPrice, imageURL) {
         this.gameID = gameID;
         this.gameTitle = gameTitle;
         this.gameDescription = gameDescription;
@@ -7,6 +11,7 @@ export class GameDetails {
         this.originalPrice = originalPrice;
         this.store = store;
         this.currentPrice = currentPrice;
+        this.imageURL = imageURL || NoGameImageURL;
     }
 }
 
