@@ -1,10 +1,11 @@
-import axios from "axios";
+
 import { NoGameImageURL, getHumanReadableStoreName } from "../../freestuff/model.js";
 import { ContentTypeAttachment } from "@xmtp/content-type-remote-attachment";
 
 export class Notifier {
-    constructor(xmtpClient) {
+    constructor(xmtpClient, imageMetadataRetriever) {
         this.xmtpClient = xmtpClient;
+        this.imageMetadataRetriever = imageMetadataRetriever;
     }
 
     async notify(recipientAddress, gameDetails) {
@@ -32,26 +33,7 @@ export class Notifier {
         }
 
         const imageURL = gameDetails.imageURL;
-
-        // TODO: put this image in a cache
-        const imageResponse = await axios.get(imageURL, {
-            responseType: 'arraybuffer'
-        });
-
-        const filename = new URL(imageURL).pathname.split('/').pop()
-        const contentType = imageResponse.headers.get("Content-Type");
-        const contentLength = imageResponse.headers.get("Content-Length");
-
-        console.log("image response data is", imageResponse.data);
-        console.log("content-type is", contentType);
-        console.log("content-length is", contentLength);
-        console.log("filename is", filename);
-
-        const attachment = {
-            filename: filename,
-            mimeType: imageResponse.headers.get("Content-Type"),
-            data: new Uint8Array(imageResponse.data)
-        };
+        const attachment = await this.imageMetadataRetriever.getMetadata(imageURL);
 
         await conversation.send(attachment, {
             contentType: ContentTypeAttachment,

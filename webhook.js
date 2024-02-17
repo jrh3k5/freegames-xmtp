@@ -12,6 +12,7 @@ import { SQSClient } from "@aws-sdk/client-sqs";
 import { Notifier } from "./xmtp/notify/notifier.js"
 import { NewWebhookHandler } from "./http_server/handler.js";
 import { AttachmentCodec } from "@xmtp/content-type-remote-attachment";
+import { Retriever } from "./images/metadata/retriever.js";
 
 dotenv.config();
 
@@ -43,8 +44,9 @@ const xmtpClient = await Client.create(signer, {
     env: process.env.XMTP_ENV,
     codecs: [new AttachmentCodec()]
 });
- 
-const xmtpNotifier = new Notifier(xmtpClient);
+
+const imageMetadataRetriever = new Retriever();
+const xmtpNotifier = new Notifier(xmtpClient, imageMetadataRetriever);
 
 // Webhook
 const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
