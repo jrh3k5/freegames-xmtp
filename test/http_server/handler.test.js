@@ -11,12 +11,14 @@ describe("Freestuff Webhook Handler", () => {
   let notifier;
   let notifiedGameDetails;
   let notifiedDefaultOnly;
+  let droppedStores;
 
   beforeEach(() => {
     gameDetailsByID = {};
     webhookSecret = "shhhhh";
     notifiedGameDetails = [];
     notifiedDefaultOnly = [];
+    droppedStores = [];
 
     notifier = {};
     notifier.notify = (gameDetails, notifyDefaultOnly) => {
@@ -48,7 +50,7 @@ describe("Freestuff Webhook Handler", () => {
       return Promise.resolve(gameDetailsByID[gameID]);
     }
 
-    webhookHandler = NewWebhookHandler(webhookSecret, freestuffClient, notifier);
+    webhookHandler = NewWebhookHandler(webhookSecret, freestuffClient, notifier, false, droppedStores);
   })
 
   describe("the request has no body", () => {
@@ -166,6 +168,25 @@ describe("Freestuff Webhook Handler", () => {
         await killSwitched(request, response);
   
         // no notifications should have gone out
+        expect(notifiedGameDetails).to.not.contain(gameDetails);
+      })
+    })
+
+    describe("the game store has been configured as being dropped", () => {
+      it("does not enqueue the game notification", async () => {
+        const droppedStore = "itch";
+        droppedStores.push(droppedStore);
+
+        const gameID = 474838;
+        const gameDetails = new GameDetails(`${gameID}`, "Ignored Store", "It Is Drop Because of te Store", "https://dropped.store/", 1.99, droppedStore, 0.00, "https://gamedetails.dropped/thumb.png");
+        gameDetailsByID[gameID] = gameDetails;
+        requestBody.event = "free_games";
+        requestBody.data = [gameID];
+
+        await webhookHandler(request, response);
+
+        expect(response.statusCode).to.equal(200);
+        expect(response.ended).to.be.true;
         expect(notifiedGameDetails).to.not.contain(gameDetails);
       })
     })

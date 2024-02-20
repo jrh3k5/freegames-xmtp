@@ -56,6 +56,11 @@ const xmtpClient = await Client.create(signer, {
 const xmtpNotifier = new Notifier(xmtpClient, cachingImageMetadataRetriever);
 
 // Webhook
+let droppedStores;
+if (process.env.DROPPED_STORES) {
+    droppedStores = process.env.DROPPED_STORES.split(",");
+    console.log(`These stores will have their free game notifications dropped: ${droppedStores}`);
+}
 const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
 const webhookHandler = NewWebhookHandler(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, gameNotifier, process.env.KILL_SWITCH_WEBHOOK);
 const httpServer = buildWebhookServer(webhookHandler);
