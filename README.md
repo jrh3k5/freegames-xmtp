@@ -38,6 +38,10 @@ This supports the following kill switches:
 * `KILL_SWITCH_XMTP_MESSAGES`: (default `false`); if set to `true`, then messages from the user notification queue will be consumed, but no messages will be sent via XMTP
 * `KILL_SWITCH_WEBHOOK`: (default `false`); if set to to `true`, then requests will be received via the webhook, but no game notification messages will be enqueued and no lookups of game details will be executed
 
+#### Dropping Stores
+
+If you find that some stores are too spammy in their messaging, you can set the `DROPPED_STORES` parameter to a comma-delimited list of values that are defined as [stores](https://docs.freestuffbot.xyz/v1/types#store) in the FreeStuff API.
+
 ### Running the Application
 
 Install the source of this project in a desired location. Make sure to run `npm ci`
