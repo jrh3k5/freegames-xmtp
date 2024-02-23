@@ -32,6 +32,8 @@ export function newUserNotificationHandler(notifier, killSwitch) {
 // consumeUserNotifications consumes user notifications enqueued in the given URL.
 export function consumeUserNotifications(sqsClient, sqsQueueURL, messageHandler) {
     const app = Consumer.create({
+        batchSize: 10,
+        pollingWaitTimeMs: 20000,
         messageAttributeNames: [
             "GameID", 
             "GameTitle", 
