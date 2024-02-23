@@ -62,7 +62,7 @@ if (process.env.DROPPED_STORES) {
     console.log(`These stores will have their free game notifications dropped: ${droppedStores}`);
 }
 const freestuffClient = new FreestuffClient(process.env.FREESTUFF_API_KEY);
-const webhookHandler = NewWebhookHandler(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, gameNotifier, process.env.KILL_SWITCH_WEBHOOK);
+const webhookHandler = NewWebhookHandler(process.env.FREESTUFF_WEBHOOK_SECRET, freestuffClient, gameNotifier, process.env.KILL_SWITCH_WEBHOOK, droppedStores);
 const httpServer = buildWebhookServer(webhookHandler);
 
 // consume game notifications
