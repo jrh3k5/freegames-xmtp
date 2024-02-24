@@ -9,6 +9,8 @@ export function consumeGameNotifications(sqsClient,
                                          gameSQSQueueURL, userSQSQueueURL,
                                          subscriptionsService) {
     const app = Consumer.create({
+        batchSize: 10,
+        pollingWaitTimeMs: 20000,
         messageAttributeNames: [
             "GameID", 
             "GameTitle", 
