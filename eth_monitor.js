@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+import { Handler } from "./subscriptions/eth_send/handler.js";
 
 dotenv.config();
 
@@ -21,15 +22,36 @@ if (!settings.network) {
     throw "An invalid Alchemy network ID has been specified";
 }
 
+const blocksPerMinute = process.env.SUBSCRIPTION_NETWORK_BLOCKS_PER_MINUTE || 30;
+const subscriptionDurationMinutes = process.env.SUBSCRIPTION_DURATION_MINUTES || (60 * 24 * 30);
+const subscriptionDurationBlocks = blocksPerMinute * subscriptionDurationMinutes;
+
+console.log(`New subscriptions will subscribe for ${subscriptionDurationMinutes} minutes; at ${blocksPerMinute} BPM, each subscription will last for ${subscriptionDurationBlocks} blocks`);
+
+const minimumGwei = process.env.SUBSCRIPTION_MINIMUM_GWEI;
+if (!minimumGwei) {
+    throw "No gwei minimum specified";
+}
+
+console.log(`Subscribers must send at least ${minimumGwei} to subscribe`);
+
 console.log(`Monitoring for ETH sends to address ${receiptAddress} on ${settings.network}`);
 
+const sendHandler = new Handler(subscriptionDurationBlocks, minimumGwei);
 new Alchemy(settings).ws.on(
     {
         method: AlchemySubscription.MINED_TRANSACTIONS,
         addresses: [{ to: receiptAddress }]
     },
     res => {
-        const sentGwei = parseInt(res.transaction.value, 16);
-        console.log(`${res.transaction.from} sent ${sentGwei}`)
+        try {
+            const senderAddress = res.transaction.from;
+            const sentGwei = parseInt(res.transaction.value, 16);
+            sendHandler.handle(senderAddress, sentGwei).catch(e => {
+                console.log(`Failed to handle send from ${senderAddress}`, e);
+            });
+        } catch(e) {
+            console.log("failed to handle ETH send", e);
+        }
     }
 );
