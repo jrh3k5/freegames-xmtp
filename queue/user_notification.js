@@ -14,7 +14,10 @@ export function newUserNotificationHandler(notifier, killSwitch) {
         const gameTitle = message.MessageAttributes.GameTitle.StringValue;
         const gameDescription = message.MessageAttributes.GameDescription.StringValue;
         const storeURL = message.MessageAttributes.StoreURL.StringValue;
-        const originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
+        let originalPrice;
+        if (message.MessageAttributes.OriginalPrice) {
+            originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
+        }
         const store = message.MessageAttributes.Store.StringValue;
         const currentPrice = message.MessageAttributes.CurrentPrice.StringValue;
         const imageURL = message.MessageAttributes.ImageURL.StringValue;

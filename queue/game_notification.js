@@ -30,7 +30,10 @@ export function consumeGameNotifications(sqsClient,
             const gameTitle = message.MessageAttributes.GameTitle.StringValue;
             const gameDescription = message.MessageAttributes.GameDescription.StringValue;
             const storeURL = message.MessageAttributes.StoreURL.StringValue;
-            const originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
+            let originalPrice;
+            if (message.MessageAttributes.OriginalPrice) {
+                originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
+            }
             const store = message.MessageAttributes.Store.StringValue;
             const currentPrice = message.MessageAttributes.CurrentPrice.StringValue;
             const imageURL = message.MessageAttributes.ImageURL.StringValue;
@@ -100,10 +103,6 @@ export class GameNotifier {
                 DataType: "String",
                 StringValue: gameDetails.url
             },
-            "OriginalPrice": {
-                DataType: "String",
-                StringValue: `${gameDetails.originalPrice}`
-            },
             "Store": {
                 DataType: "String",
                 StringValue: gameDetails.store
@@ -129,6 +128,13 @@ export class GameNotifier {
             messageAttributes["ExpiryDate"] = {
                 DataType: "String",
                 StringValue: gameDetails.expiryDate.toISOString()
+            }
+        }
+
+        if (gameDetails.originalPrice) {
+            messageAttributes["OriginalPrice"] = {
+                DataType: "String",
+                StringValue: `${gameDetails.originalPrice}`
             }
         }
 
@@ -168,10 +174,6 @@ async function enqueueUserNotification(recipientAddress, gameDetails, sqsClient,
             DataType: "String",
             StringValue: gameDetails.url
         },
-        "OriginalPrice": {
-            DataType: "String",
-            StringValue: gameDetails.originalPrice
-        },
         "Store": {
             DataType: "String",
             StringValue: gameDetails.store
@@ -190,6 +192,13 @@ async function enqueueUserNotification(recipientAddress, gameDetails, sqsClient,
         messageAttributes["ExpiryDate"] = {
             DataType: "String",
             StringValue: gameDetails.expiryDate.toISOString()
+        }
+    }
+
+    if (gameDetails.originalPrice) {
+        messageAttributes["OriginalPrice"] = {
+            DataType: "String",
+            StringValue: `${gameDetails.originalPrice}`
         }
     }
 
