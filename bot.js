@@ -2,11 +2,12 @@ import { DynamoDBClient, waitUntilTableExists } from "@aws-sdk/client-dynamodb";
 import dotenv from "dotenv";
 import { SubscriptionsTableName } from "./dynamodb/constants.js"
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
-import run from "@xmtp/bot-starter"
-import { NewBotHandler } from "./xmtp/bot_handler.js";
+import { newBotHandler } from "./xmtp/bot_handler.js";
 import { CachingSubscriptionService } from "./subscriptions/caching.js";
 import { newCache } from "./cache/cache.js";
 import { getDefaultRecipients } from "./xmtp/notify/recipients.js";
+import { newClient } from "./xmtp/client.js";
+import { run } from "./xmtp/bot_runner.js"
 
 dotenv.config();
 
@@ -42,7 +43,11 @@ if (process.env.XMTP_BOT_SUBSCRIBE_ALLOWLIST) {
     console.log(`Limiting subscriptions to ${allowList.length} allowlisted addresses`)
 }
 
-const botHandler = NewBotHandler(cachingSubscriptionsService, allowList);
+const botHandler = newBotHandler(cachingSubscriptionsService, allowList);
+
+const xmtpClient = await newClient(process.env.KEY, process.env.XMTP_ENV);
+await xmtpClient.publishUserContact();
 
 // XMTP
-run(botHandler);
+run(xmtpClient, botHandler);
+

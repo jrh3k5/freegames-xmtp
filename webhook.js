@@ -1,11 +1,9 @@
 import { DynamoDBClient, waitUntilTableExists } from "@aws-sdk/client-dynamodb";
 import { buildWebhookServer } from "./http_server/index.js";
-import { Client } from "@xmtp/xmtp-js";
 import dotenv from "dotenv";
 import { FreestuffClient } from "./freestuff/client.js";
 import { GameNotifier, consumeGameNotifications } from "./queue/game_notification.js";
 import { consumeUserNotifications, newUserNotificationHandler } from "./queue/user_notification.js";
-import { Wallet } from "ethers";
 import { SubscriptionsTableName } from "./dynamodb/constants.js"
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 import { SQSClient } from "@aws-sdk/client-sqs";
@@ -15,6 +13,7 @@ import { AttachmentCodec } from "@xmtp/content-type-remote-attachment";
 import { Retriever } from "./images/metadata/retriever.js";
 import { newCache } from "./cache/cache.js";
 import { CachingRetriever } from "./images/metadata/caching_retriever.js";
+import { newClient } from "./xmtp/client.js";
 
 dotenv.config();
 
@@ -47,11 +46,7 @@ const sqsClient = new SQSClient(awsConfig);
 const gameNotifier = new GameNotifier(sqsClient, gameNotificationQueueURL);
 
 // XMTP
-const signer = new Wallet(process.env.KEY);
-const xmtpClient = await Client.create(signer, { 
-    env: process.env.XMTP_ENV,
-    codecs: [new AttachmentCodec()]
-});
+const xmtpClient = await  newClient(process.env.KEY, process.env.XMTP_ENV, [new AttachmentCodec()]);
 
 const xmtpNotifier = new Notifier(xmtpClient, cachingImageMetadataRetriever);
 
