@@ -47,7 +47,8 @@ export class FreestuffClient {
             // .until is seconds since UNIX epoch, so convert to milliseconds
             expiryDate = new Date(gameDetails.until * 1000);
         }
+        const kind = gameDetails.kind;
 
-        return new GameDetails(`${gameID}`, gameTitle, gameDescription, gameURL, originalPrice, store, currentPrice, imageURL, expiryDate);
+        return new GameDetails(`${gameID}`, gameTitle, gameDescription, gameURL, originalPrice, store, currentPrice, imageURL, expiryDate, kind);
     }
 }

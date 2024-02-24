@@ -52,7 +52,9 @@ export function NewWebhookHandler(webhookSecret, freestuffClient, notifier, isKi
         try {
             const detailPromises = requestBody.data.map(gameID => freestuffClient.getGameDetails(gameID));
             const allGameDetails = await Promise.all(detailPromises);
-            const freeGameDetails = allGameDetails.filter(g => !g.currentPrice).filter(g => !storeIsDropped(g));
+            const freeGameDetails = allGameDetails.filter(g => !g.currentPrice)
+                .filter(g => !storeIsDropped(g))
+                .filter(g => g.kind === "game");
             const notifyPromises = freeGameDetails.map(gameDetails => notifier.notify(gameDetails, requestBody.notifyDefaultRecipientsOnly));
             await Promise.all(notifyPromises);
         } catch(error) {

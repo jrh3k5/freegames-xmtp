@@ -82,7 +82,7 @@ describe("Freestuff Webhook Handler", () => {
 
       it("sends out a notification of the free game", async () => {
         const gameID = 12345;
-        const gameDetails = new GameDetails(`${gameID}`, "A Free Game", "Free is best", "https://free.game/", 59.99, "gog", 0.00, "https://gamedetails/thumb.png");
+        const gameDetails = new GameDetails(`${gameID}`, "A Free Game", "Free is best", "https://free.game/", 59.99, "gog", 0.00, "https://gamedetails/thumb.png", new Date(), "game");
         gameDetailsByID[gameID] = gameDetails;
         requestBody.data = [gameID];
 
@@ -104,7 +104,7 @@ describe("Freestuff Webhook Handler", () => {
       describe("the current price is not free", () => {
         it("silently drops the request", async () => {
             const gameID = 12345;
-            const gameDetails = new GameDetails(`${gameID}`, "A Not-Free Game", "Free is best", "https://not.free.game/", 49.99, "steam", 19.99, "https://gamedetails/thumb.png");
+            const gameDetails = new GameDetails(`${gameID}`, "A Not-Free Game", "Free is best", "https://not.free.game/", 49.99, "steam", 19.99, "https://gamedetails/thumb.png", new Date(), "game");
             gameDetailsByID[gameID] = gameDetails;
             requestBody.data = [gameID];
 
@@ -121,7 +121,7 @@ describe("Freestuff Webhook Handler", () => {
 
         it("generates a request to only notify the default recipients", async () => {
             const gameID = 12345;
-            const gameDetails = new GameDetails(`${gameID}`, "A Free Game for Default Notifications Only", "Free is best", "https://free.game/", 29.99, "steam", 0.00, "https://gamedetails/thumb.png");
+            const gameDetails = new GameDetails(`${gameID}`, "A Free Game for Default Notifications Only", "Free is best", "https://free.game/", 29.99, "steam", 0.00, "https://gamedetails/thumb.png", new Date(), "game");
             gameDetailsByID[gameID] = gameDetails;
             requestBody.data = [gameID];
 
@@ -129,6 +129,19 @@ describe("Freestuff Webhook Handler", () => {
 
             expect(notifiedGameDetails).to.contain(gameDetails);
             expect(notifiedDefaultOnly[0]).to.be.true;
+        })
+      })
+
+      describe("the 'free_games' event is not for a game", () => {
+        it("does not enqueue a notification", async () => {
+            const gameID = 86382;
+            const gameDetails = new GameDetails(`${gameID}`, "It's DLC", "DLCCCC", "https://free.dlc/", 29.99, "steam", 0.00, "https://gamedetails/dlc/thumb.png", new Date(), "dlc");
+            gameDetailsByID[gameID] = gameDetails;
+            requestBody.data = [gameID];
+            
+            await webhookHandler(request, response);
+
+            expect(notifiedGameDetails).to.be.empty;
         })
       })
     })
@@ -160,7 +173,7 @@ describe("Freestuff Webhook Handler", () => {
         const killSwitched = NewWebhookHandler(webhookSecret, freestuffClient, notifier, true);
   
         const gameID = 98765;
-        const gameDetails = new GameDetails(`${gameID}`, "No One Will Know About This", "It Is Kill-Switched", "https://kill.switch/", 29.99, "gog", 0.00, "https://gamedetails/thumb.png");
+        const gameDetails = new GameDetails(`${gameID}`, "No One Will Know About This", "It Is Kill-Switched", "https://kill.switch/", 29.99, "gog", 0.00, "https://gamedetails/thumb.png", new Date(), "game");
         gameDetailsByID[gameID] = gameDetails;
         requestBody.event = "free_games";
         requestBody.data = [gameID];
@@ -178,7 +191,7 @@ describe("Freestuff Webhook Handler", () => {
         droppedStores.push(droppedStore);
 
         const gameID = 474838;
-        const gameDetails = new GameDetails(`${gameID}`, "Ignored Store", "It Is Drop Because of te Store", "https://dropped.store/", 1.99, droppedStore, 0.00, "https://gamedetails.dropped/thumb.png");
+        const gameDetails = new GameDetails(`${gameID}`, "Ignored Store", "It Is Drop Because of te Store", "https://dropped.store/", 1.99, droppedStore, 0.00, "https://gamedetails.dropped/thumb.png", new Date(), "game");
         gameDetailsByID[gameID] = gameDetails;
         requestBody.event = "free_games";
         requestBody.data = [gameID];
