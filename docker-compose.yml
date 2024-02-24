@@ -40,6 +40,15 @@ services:
     volumes:
       - ./:/home/node/app
     command: "node bot.js"
+  eth_monitor:
+    image: node:18
+    user: "node"
+    working_dir: /home/node/app
+    env_file:
+      - .env
+    volumes:
+      - ./:/home/node/app
+    command: "node eth_monitor.js"
   localstack:
     container_name: "localstack"
     image: localstack/localstack:3.0.2
