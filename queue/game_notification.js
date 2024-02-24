@@ -144,7 +144,7 @@ export class GameNotifier {
         if (gameDetails.originalPrice) {
             messageAttributes["OriginalPrice"] = {
                 DataType: "String",
-                StringValue: `${gameDetails.originalPrice}`
+                StringValue: `${gameDetails.originalPrice.toFixed(2)}`
             }
         }
 
