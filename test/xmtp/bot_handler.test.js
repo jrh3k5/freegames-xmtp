@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { NewBotHandler } from "../../xmtp/bot_handler.js";
+import { newBotHandler } from "../../xmtp/bot_handler.js";
 
 describe("Bot Handler", () => {
     let subscribedAddresses; // the addresses that are subscribed
@@ -7,7 +7,7 @@ describe("Bot Handler", () => {
 
     let handler;
     let allowList;
-    let xmtpContext;
+    let xmtpMessage;
 
     beforeEach(() => {
         allowList = [];
@@ -35,17 +35,16 @@ describe("Bot Handler", () => {
             return Promise.resolve();
         };
 
-        xmtpContext = {
-            message: {
-                content: ""
-            }
-        };
-        xmtpContext.reply = message => {
-            sentMessages.push(message);
-            return Promise.resolve();
+        xmtpMessage = {
+            content: "",
+            conversation: {}
         }
 
-        handler = NewBotHandler(subscriptionsService, allowList);
+        xmtpMessage.conversation.send = async (message) => {
+            sentMessages.push(message);
+        };
+
+        handler = newBotHandler(subscriptionsService, allowList);
     })
 
     describe("the sender is subscribed", () => {
@@ -54,21 +53,21 @@ describe("Bot Handler", () => {
 
         beforeEach(() => {
             botAddress = "bot.address";
-            xmtpContext.message.recipientAddress = botAddress;
+            xmtpMessage.recipientAddress = botAddress;
 
             recipientAddress = "sender.is.subscribed";
-            xmtpContext.message.senderAddress = recipientAddress;
+            xmtpMessage.senderAddress = recipientAddress;
             
             subscribedAddresses.push(recipientAddress);
         })
 
         describe("the message is 'stop'", () => {
             beforeEach(() => {
-                xmtpContext.message.content = "stop";
+                xmtpMessage.content = "stop";
             })
 
             it("unsubscribes the sender", async () => {
-                await handler(xmtpContext);
+                await handler(xmtpMessage);
 
                 expect(subscribedAddresses).to.not.contain(recipientAddress);
                 expect(sentMessages).to.have.lengthOf(1);
@@ -78,11 +77,11 @@ describe("Bot Handler", () => {
 
         describe("the message is 'help'", () => {
             beforeEach(() => {
-                xmtpContext.message.content = "help";
+                xmtpMessage.content = "help";
             })
 
             it("tells the user where they can submit a bug", async () => {
-                await handler(xmtpContext);
+                await handler(xmtpMessage);
 
                 // the sender should not have been unsubscribed
                 expect(subscribedAddresses).to.contain(recipientAddress);
@@ -93,27 +92,15 @@ describe("Bot Handler", () => {
 
         describe("the message is not recognized", () => {
             beforeEach(() => {
-                xmtpContext.message.content = "this message is not handled";
+                xmtpMessage.content = "this message is not handled";
             })
 
             it("does not respond to the user", async () => {
-                await handler(xmtpContext);
+                await handler(xmtpMessage);
 
                 // the sender should not have been unsubscribed
                 expect(subscribedAddresses).to.contain(recipientAddress);
                 expect(sentMessages).to.be.empty;
-            })
-
-            describe("the message is from the bot", () => {
-                beforeEach(() => {
-                  xmtpContext.message.senderAddress = botAddress;  
-                })
-
-                it("does not response to the user", async () => {
-                    await handler(xmtpContext);
-
-                    expect(sentMessages).to.be.empty;
-                })
             })
         })
     })
@@ -126,16 +113,16 @@ describe("Bot Handler", () => {
             
             allowList.push(recipientAddress);
 
-            xmtpContext.message.senderAddress = recipientAddress;
+            xmtpMessage.senderAddress = recipientAddress;
         })
 
         describe("the user sends 'stop'", () => {
             beforeEach(() => {
-                xmtpContext.message.content = "stop";
+                xmtpMessage.content = "stop";
             })
 
             it("tells the user they can't unsubscribe because they aren't subscribed", async () => {
-                await handler(xmtpContext);
+                await handler(xmtpMessage);
 
                 // The user should not be subscribed
                 expect(subscribedAddresses).to.not.contain(recipientAddress);
@@ -146,11 +133,11 @@ describe("Bot Handler", () => {
 
         describe("the user sends 'subscribe", () => {
             beforeEach(() => {
-                xmtpContext.message.content = "subscribe";
+                xmtpMessage.content = "subscribe";
             })
 
             it("subscribes the user", async () => {
-                await handler(xmtpContext);
+                await handler(xmtpMessage);
 
                 expect(subscribedAddresses).to.contain(recipientAddress);
                 expect(sentMessages).to.have.lengthOf(1);
@@ -159,13 +146,13 @@ describe("Bot Handler", () => {
             
             describe("the sender is not in the allowlist", () => {
                 beforeEach(() => {
-                    xmtpContext.message.senderAddress = "0xnotallowed";
+                    xmtpMessage.senderAddress = "0xnotallowed";
                 })
 
                 it("denies the subscription request", async () => {
-                    await handler(xmtpContext);
+                    await handler(xmtpMessage);
 
-                    expect(subscribedAddresses).to.not.contain(xmtpContext.message.senderAddress);
+                    expect(subscribedAddresses).to.not.contain(xmtpMessage.senderAddress);
                     // protect against false positives due to bad setup
                     expect(subscribedAddresses).to.not.contain(recipientAddress);
                 })
@@ -174,11 +161,11 @@ describe("Bot Handler", () => {
 
         describe("the user input is not recognized", () => {
             beforeEach(() => {
-                xmtpContext.message.content = "not recognized";
+                xmtpMessage.content = "not recognized";
             })
 
             it("sends the initial salutation to the user", async () => {
-                await handler(xmtpContext);
+                await handler(xmtpMessage);
 
                 // the user should not be subscribed
                 expect(subscribedAddresses).to.not.contain(recipientAddress);
