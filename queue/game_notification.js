@@ -7,10 +7,13 @@ import { GameDetails } from "../freestuff/model.js";
 // it into multiple user notifications for that game.
 export function consumeGameNotifications(sqsClient,
                                          gameSQSQueueURL, userSQSQueueURL,
-                                         subscriptionsService) {
+                                         subscriptionsService,
+                                         waitTimeSeconds,
+                                         pollingWaitTimeMs) {       
     const app = Consumer.create({
         batchSize: 10,
-        pollingWaitTimeMs: 20000,
+        waitTimeSeconds: parseInt(waitTimeSeconds) || 20,
+        pollingWaitTimeMs: parseInt(pollingWaitTimeMs) || 20000,
         messageAttributeNames: [
             "GameID", 
             "GameTitle", 

@@ -42,6 +42,15 @@ This supports the following kill switches:
 
 If you find that some stores are too spammy in their messaging, you can set the `DROPPED_STORES` parameter to a comma-delimited list of values that are defined as [stores](https://docs.freestuffbot.xyz/v1/types#store) in the FreeStuff API.
 
+#### SQS Polling
+
+The following can be used to configure the frequency of message polling in this system.
+
+* `GAME_NOTIFICATION_POLLING_S` (default 20, max 20): the number of seconds that should elapse between polling the game notification queue for messages
+* `GAME_NOTIFICATION_POLLING_WAIT_MS` (default 20000): the number of milliseconds to wait while polling to receive a message before re-polling the game notification queue
+* `USER_NOTIFICATION_POLLING_S` (default 20, max 20): the number of seconds that should elapse between polling the user notification queue for messages
+* `USER_NOTIFICATION_POLLING_WAIT_MS` (default 20000): the number of milliseconds to wait while polling to receive a message before re-polling the user notification queue
+
 ### Running the Application
 
 Install the source of this project in a desired location. Make sure to run `npm ci`

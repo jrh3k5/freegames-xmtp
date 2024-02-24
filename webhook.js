@@ -66,10 +66,10 @@ const webhookHandler = NewWebhookHandler(process.env.FREESTUFF_WEBHOOK_SECRET, f
 const httpServer = buildWebhookServer(webhookHandler);
 
 // consume game notifications
-consumeGameNotifications(sqsClient, gameNotificationQueueURL, userNotificationQueueURL, subscriptionsService);
+consumeGameNotifications(sqsClient, gameNotificationQueueURL, userNotificationQueueURL, subscriptionsService, process.env.GAME_NOTIFICATION_POLLING_S, process.env.GAME_NOTIFICATION_POLLING_WAIT_MS);
 
 const userNotificationsHandler = newUserNotificationHandler(xmtpNotifier, process.env.KILL_SWITCH_XMTP_MESSAGES);
-consumeUserNotifications(sqsClient, userNotificationQueueURL, userNotificationsHandler);
+consumeUserNotifications(sqsClient, userNotificationQueueURL, userNotificationsHandler, process.env.USER_NOTIFICATION_POLLING_S, process.env.USER_NOTIFICATION_POLLING_WAIT_MS);
 
 httpServer.listen(process.env.FREESTUFF_WEBHOOK_PORT, (err) => {
     if (err) {
