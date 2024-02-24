@@ -24,7 +24,8 @@ export function consumeGameNotifications(sqsClient,
             "NotifyDefaultRecipientsOnly", 
             "CurrentPrice", 
             "ImageURL",
-            "ExpiryDate"
+            "ExpiryDate",
+            "Kind"
         ],
         sqs: sqsClient,
         queueUrl: gameSQSQueueURL,
@@ -33,20 +34,22 @@ export function consumeGameNotifications(sqsClient,
             const gameTitle = message.MessageAttributes.GameTitle.StringValue;
             const gameDescription = message.MessageAttributes.GameDescription.StringValue;
             const storeURL = message.MessageAttributes.StoreURL.StringValue;
+            const store = message.MessageAttributes.Store.StringValue;
+            const currentPrice = message.MessageAttributes.CurrentPrice.StringValue;
+            const imageURL = message.MessageAttributes.ImageURL.StringValue;
+            const kind = message.MessageAttributes.Kind.StringValue;
+
             let originalPrice;
             if (message.MessageAttributes.OriginalPrice) {
                 originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
             }
-            const store = message.MessageAttributes.Store.StringValue;
-            const currentPrice = message.MessageAttributes.CurrentPrice.StringValue;
-            const imageURL = message.MessageAttributes.ImageURL.StringValue;
 
             let expiryDate;
             if (message.MessageAttributes.ExpiryDate) {
                 expiryDate = new Date(message.MessageAttributes.ExpiryDate.StringValue);
             }
 
-            const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store, currentPrice, imageURL, expiryDate);
+            const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store, currentPrice, imageURL, expiryDate, kind);
 
             if (message.MessageAttributes.NotifyDefaultRecipientsOnly) {
                 const defaultRecipients = getDefaultRecipients();
@@ -117,6 +120,10 @@ export class GameNotifier {
             "ImageURL": {
                 DataType: "String",
                 StringValue: gameDetails.imageURL
+            },
+            "Kind": {
+                DataType: "String",
+                StringValue: gameDetails.kind
             }
         };
 
@@ -187,7 +194,11 @@ async function enqueueUserNotification(recipientAddress, gameDetails, sqsClient,
         },
         "ImageURL": {
             DataType: "String",
-            StringValue: gameDetails.imageURL,
+            StringValue: gameDetails.imageURL
+        },
+        "Kind": {
+            DataType: "String",
+            StringValue: gameDetails.kind
         }
     };
 
