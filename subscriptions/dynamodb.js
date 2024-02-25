@@ -39,7 +39,7 @@ export class DynamoDBSubscriptionService {
         return activeRecord && activeRecord.S === "true";
     }
 
-    // getSubscriptionsPage gets the stored subscriptions as a SubscriptionsPage instance.
+    // getSubscriptions gets the stored subscriptions as a SubscriptionsPage instance.
     // If a cursor is given, then the returned results will be a page starting from the
     // the given cursor. If the returned page has no results, it should be assumed that
     // there are no more subscriptions to be retrieved.

@@ -18,8 +18,40 @@ describe("DynamoDB integration test", () => {
 
         subscriptionsRepo = new DynamoDBSubscriptionService(dynamodbClient);
     })
+    
+    describe("getting subscriptions", () => {
+        it("retrieves all of the active subscriptions", async () => {
+            const addresses = [];
+            for (let i = 0; i < 100; i++) {
+                const address = `0xGetAllActive${i}`;
+                addresses.push(address);
+                await subscriptionsRepo.upsertSubscription(address);
+            }
 
-    describe("upserting a subscription", () => [
+            // Deactivate one subscription to verify it's not returned
+            const deactivatedAddress = addresses[49];
+            await subscriptionsRepo.unsubscribe(deactivatedAddress);
+
+            const returnedAddresses = [];
+            let page = await subscriptionsRepo.getSubscriptions();
+            do {
+                if (!page) {
+                    break
+                }
+
+                page.recipientAddresses.forEach(receipientAddress => {
+                    returnedAddresses.push(receipientAddress);
+                })
+
+                page = await subscriptionsRepo.getSubscriptions(page.cursor);
+            } while(page.recipientAddresses.length && page.cursor)
+
+            expect(returnedAddresses).to.have.lengthOf(99);
+            expect(returnedAddresses).to.not.contain(deactivatedAddress);
+        })
+    })
+
+    describe("upserting a subscription", () => {
         describe("the subscription does not already exist", () => {
             it("creates a subscription", async () => {
                 const address = "0xDoesNotExistAlready";
@@ -31,5 +63,5 @@ describe("DynamoDB integration test", () => {
                 expect(await subscriptionsRepo.isSubscribed(address)).to.be.true;
             })
         })
-    ])
+    })
 })

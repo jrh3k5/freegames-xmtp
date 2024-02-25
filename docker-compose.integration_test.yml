@@ -1,17 +1,5 @@
 version: '3.8'
 services:
-  # integration_test:
-  #   image: node:18
-  #   depends_on:
-  #     - localstack
-  #   user: "node"
-  #   working_dir: /home/node/app
-  #   environment:
-  #     AWS_ACCESS_KEY_ID: anythingwilldoforlocalstack
-  #     AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
-  #   volumes:
-  #     - ./:/home/node/app
-  #   command: 'bash -c "npm ci && npm run itest"'
   localstack:
     container_name: "localstack"
     image: localstack/localstack:3.0.2

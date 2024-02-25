@@ -137,5 +137,5 @@ curl -i https://api.freestuffbot.xyz/v1/games/free \
 If you wish to run the integration tests locally, execute the following:
 
 ```
-docker compose -f docker-compose.integration_test.yml up localstack && npm run itest
+docker compose -f docker-compose.integration_test.yml up localstack -d && sleep 10 && npm run itest
 ```
