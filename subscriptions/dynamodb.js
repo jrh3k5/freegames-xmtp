@@ -140,15 +140,11 @@ export class DynamoDBSubscriptionService {
         updateExpressions.push("active = :active");
 
         const expressionAttributeValues = {};
-        expressionAttributeValues[":active"] = {
-            S: "true"
-        };
+        expressionAttributeValues[":active"] = "true"
 
         if (subscriptionExpiryBlock) {
             updateExpressions.push("subscription_expiry_block = :subscriptionExpiryBlock")
-            expressionAttributeValues[":subscriptionExpiryBlock"] = {
-                S: `${subscriptionExpiryBlock}`
-            }
+            expressionAttributeValues[":subscriptionExpiryBlock"] = `${subscriptionExpiryBlock}`
         }
 
         const blockUpdateCommand = new UpdateCommand({
