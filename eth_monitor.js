@@ -65,8 +65,9 @@ new Alchemy(settings).ws.on(
     res => {
         try {
             const senderAddress = res.transaction.from;
+            const blockNumber = parseInt(res.transaction.blockNumber, 16);
             const sentGwei = parseInt(res.transaction.value, 16);
-            sendHandler.handle(senderAddress, sentGwei).catch(e => {
+            sendHandler.handle(senderAddress, blockNumber, sentGwei).catch(e => {
                 console.log(`Failed to handle send from ${senderAddress}`, e);
             });
         } catch(e) {
