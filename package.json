@@ -5,7 +5,8 @@
   "main": "webhook.js",
   "type": "module",
   "scripts": {
-    "test": "mocha --recursive --exit"
+    "test": "mocha --recursive --exit",
+    "itest": "echo 'Waiting for startup' && sleep 5 && echo 'Running tests' && mocha --recursive --exit integration_test"
   },
   "repository": {
     "type": "git",

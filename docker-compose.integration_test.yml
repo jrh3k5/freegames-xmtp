@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  integration_test:
+    image: node:18
+    depends_on:
+      - localstack
+    user: "node"
+    working_dir: /home/node/app
+    env_file:
+      - .env
+    environment:
+      AWS_ACCESS_KEY_ID: anythingwilldoforlocalstack
+      AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
+    volumes:
+      - ./:/home/node/app
+    command: "npm run itest"
+  localstack:
+    container_name: "localstack"
+    image: localstack/localstack:3.0.2
+    environment:
+      DYNAMODB_SHARE_DB: 1
+      SERVICES: dynamodb,s3,sqs
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ".docker/localstack/bootstrap:/etc/localstack/init/ready.d"
