@@ -69,11 +69,11 @@ describe("Caching Subscriptions Service", () => {
     describe("unsubscribe", () => {
         it("deletes the cached data", async () => {
             const recipientAddress = "is.unsubscribed.cached";
-            cachedData["subscribed-" + recipientAddress] = true;
+            cachedData["subscribed-" + recipientAddress.toLowerCase()] = true;
 
             await service.unsubscribe(recipientAddress);
 
-            expect(cachedData["subscribed-" + recipientAddress]).to.not.exist;
+            expect(cachedData["subscribed-" + recipientAddress.toLowerCase()]).to.not.exist;
         })
     })
 
@@ -81,22 +81,22 @@ describe("Caching Subscriptions Service", () => {
         describe("'true' is cached", () => {
             it("does not delete the cached data", async () => {
                 const recipientAddress = "upsertSubscription.cached";
-                cachedData["subscribed-" + recipientAddress] = true;
+                cachedData["subscribed-" + recipientAddress.toLowerCase()] = true;
 
                 await service.upsertSubscription(recipientAddress);
             
-                expect(cachedData["subscribed-" + recipientAddress]).to.be.true;
+                expect(cachedData["subscribed-" + recipientAddress.toLowerCase()]).to.be.true;
             })
         })
 
         describe("'false' is cached", () => {
             it("deletes the cached data", async () => {
                 const recipientAddress = "upsertSubscription.cached";
-                cachedData["subscribed-" + recipientAddress] = false;
+                cachedData["subscribed-" + recipientAddress.toLowerCase()] = false;
 
                 await service.upsertSubscription(recipientAddress);
             
-                expect(cachedData["subscribed-" + recipientAddress]).to.not.exist;
+                expect(cachedData["subscribed-" + recipientAddress.toLowerCase()]).to.not.exist;
             })
         })
     })

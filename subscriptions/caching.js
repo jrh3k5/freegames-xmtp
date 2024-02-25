@@ -5,7 +5,11 @@ export class CachingSubscriptionService {
     }
 
     async isSubscribed(recipientAddress) {
-        const cacheKey = `subscribed-${recipientAddress}`;
+        if (!recipientAddress) {
+            return
+        }
+
+        const cacheKey = `subscribed-${recipientAddress.toLowerCase()}`;
 
         const cached = this.cache.get(cacheKey);
         if (cached != undefined) {
@@ -23,12 +27,20 @@ export class CachingSubscriptionService {
     }
 
     async unsubscribe(recipientAddress) {
-        await this.cache.del(`subscribed-${recipientAddress}`);
+        if (!recipientAddress) {
+            return
+        }
+
+        await this.cache.del(`subscribed-${recipientAddress.toLowerCase()}`);
         return await this.delegateService.unsubscribe(recipientAddress);
     }
 
     async upsertSubscription(recipientAddress, subscriptionExpiryBlock) {
-        const cacheKey = `subscribed-${recipientAddress}`;
+        if (!recipientAddress) {
+            throw "A receipient address must be supplied when upserting a subscription";
+        }
+
+        const cacheKey = `subscribed-${recipientAddress.toLowerCase()}`;
         const cached = await this.cache.get(cacheKey);
         if (cached != undefined && !cached) {
             // only delete the cached data if we previously cached

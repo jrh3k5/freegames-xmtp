@@ -23,11 +23,20 @@ export class DynamoDBSubscriptionService {
                 "recipient_address": {
                     S: normalizedAddress
                 }
+            },
+            FilterExpression: "active = :active",
+            ExpressionAttributeValues: {
+                ":active": "true"
             }
         };
 
         const getResult = await this.dynamoDBClient.send(new GetItemCommand(input));
-        return !!getResult.Item;
+        if (!getResult.Item) {
+            return false;
+        }
+
+        const activeRecord = getResult.Item["active"];
+        return activeRecord && activeRecord.S === "true";
     }
 
     // getSubscriptionsPage gets the stored subscriptions as a SubscriptionsPage instance.
@@ -39,7 +48,13 @@ export class DynamoDBSubscriptionService {
     async getSubscriptions(cursor) {
         const input = {
             TableName: SubscriptionsTableName,
-            AttributesToGet: ["recipient_address"],
+            IndexName: "active-index",
+            FilterExpression: "active = :active",
+            ExpressionAttributeValues: {
+                ":active": {
+                    S: "true"
+                }
+            }
         };
 
         if (cursor) {
@@ -67,16 +82,18 @@ export class DynamoDBSubscriptionService {
 
         const normalizedAddress = recipientAddress.toLowerCase();
 
-        const input = {
+        const activeUpdateCommand = new UpdateCommand({
             TableName: SubscriptionsTableName,
             Key: {
-                "recipient_address": {
-                    S: normalizedAddress
-                }
-            }
-        };
+                "recipient_address": normalizedAddress
+            },
+            UpdateExpression: "set active = :active",
+            ExpressionAttributeValues: {
+                ":active": "false"
+            },
+        })
 
-        await this.dynamoDBClient.send(new DeleteItemCommand(input));
+        await this.dynamoDBDocumentClient.send(activeUpdateCommand);
     }
 
     // upsertSubscription will create a subscription for the given address if it does not already exist
@@ -90,6 +107,9 @@ export class DynamoDBSubscriptionService {
 
         try {
             const putItemInput = {
+                "active": {
+                    S: "true"
+                },
                 "recipient_address": {
                     S: normalizedAddress
                 },
@@ -117,21 +137,31 @@ export class DynamoDBSubscriptionService {
             }
         }
 
-        if (subscriptionExpiryBlock) {
-            const blockUpdateCommand = new UpdateCommand({
-                TableName: SubscriptionsTableName,
-                Key: {
-                    "recipient_address": normalizedAddress
-                },
-                UpdateExpression: "set subscription_expiry_block = :subscriptionExpiryBlock",
-                ExpressionAttributeValues: {
-                    ":subscriptionExpiryBlock": `${subscriptionExpiryBlock}`
-                },
-                ReturnValues: "ALL_NEW"
-            })
+        const updateExpressions = [];
+        updateExpressions.push("active = :active");
 
-            await this.dynamoDBDocumentClient.send(blockUpdateCommand);
+        const expressionAttributeValues = {};
+        expressionAttributeValues[":active"] = {
+            S: "true"
+        };
+
+        if (subscriptionExpiryBlock) {
+            updateExpressions.push("subscription_expiry_block = :subscriptionExpiryBlock")
+            expressionAttributeValues[":subscriptionExpiryBlock"] = {
+                S: `${subscriptionExpiryBlock}`
+            }
         }
+
+        const blockUpdateCommand = new UpdateCommand({
+            TableName: SubscriptionsTableName,
+            Key: {
+                "recipient_address": normalizedAddress
+            },
+            UpdateExpression: `set ${updateExpressions.join(", ")}`,
+            ExpressionAttributeValues: expressionAttributeValues
+        });
+
+        await this.dynamoDBDocumentClient.send(blockUpdateCommand);
 
         return;
     }
