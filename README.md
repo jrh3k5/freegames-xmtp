@@ -28,8 +28,31 @@ To deploy this project, create a copy of the `.env.sample` file and fill out the
 * `FREESTUFF_WEBHOOK_SECRET`: the secret shared with the freestuffbot.xyz API to authenticate webhook requests
 * `FREESTUFF_API_KEY`: the API key used to make requests to the freestuffbot.xyz API
 * `KEY`: the private key to be used to sign messages sent to XMTP by the bot
+
+#### Bot Access Control
+
+You can specify the following (optional) environmental variables to control access to the bot:
+
 * `XMTP_BOT_DEFAULT_RECIPIENTS`: a comma-delimited list of addresses to be loaded on startup as subscribers who will receive game notifications
 * `XMTP_BOT_SUBSCRIBE_ALLOWLIST`: a comma-delimited list of addresses to which subscribing to the bot is to be limited
+
+##### Gating Behind ETH Sends
+
+(Work in Progress)
+
+By default, users can subscribe by messaging the bot. However, access to subscriptions can be gated behind users who have sent ETH to a configured recipient address. Subscribing users is managed by the `eth_monitor.js` executable.
+
+This requires an Alchemy API key, as this uses the Alchemy transaction subscriptions to listen for ETH sends. This, at this time, requires a high availability of the monitor; if it is down, then it will not automatically detect sends and subscribe users. Manual correction will be necessary at that time.
+
+To configure this behavior, supply the following parameters:
+
+* `ALCHEMY_API_KEY`: your Alchemy API key for the network on which you can receive funds
+* `ALCHEMY_NETWORK_ID`: the network ID (corresponding to the Alchemy SDK's [network ID values](https://github.com/alchemyplatform/alchemy-sdk-js/blob/2593cfff2aa6060c3823166c9af61b346a3ba5c7/src/types/types.ts#L81-L99))
+* `SUBSCRIPTION_RECEIPT_ADDRESS`: the address to which users must send funds in order to subscribe
+* `SUBSCRIPTION_DURATION_MINUTES` (default: 30 days of minutes): the number of minutes a subscription should last
+* `SUBSCRIPTION_MINIMUM_GWEI`: the minimum amount of gwei a user must send to the configured receipt address to subscribe to the bot
+* `SUBSCRIPTION_NETWORK_BLOCKS_PER_MINUTE` (default: 30): the number of blocks the configured network produces in a minute
+
 
 #### Kill Switches
 
