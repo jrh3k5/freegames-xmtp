@@ -5,13 +5,13 @@ export class Handler {
         this.minimumGwei = minimumGwei;
     }
 
-    async handle(senderAddress, amount) {
+    async handle(senderAddress, blockNumber, amount) {
         if (amount < this.minimumGwei) {
             return
         }
 
         console.log(`${senderAddress} sent ${amount} gwei and would be subscribed for ${this.subscriptionDurationBlocks} blocks`);
 
-        await this.subscriptionService.upsertSubscription(senderAddress);
+        await this.subscriptionService.upsertSubscription(senderAddress, blockNumber + this.subscriptionDurationBlocks);
     }
 }

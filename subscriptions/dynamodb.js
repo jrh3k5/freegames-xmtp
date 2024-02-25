@@ -1,10 +1,12 @@
 import { GetItemCommand, DeleteItemCommand, PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { SubscriptionsTableName } from "../dynamodb/constants.js";
 import { SubscriptionsPage } from "./model.js";
+import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 
 export class DynamoDBSubscriptionService {
     constructor(dynamoDBClient) {
         this.dynamoDBClient = dynamoDBClient;
+        this.dynamoDBDocumentClient = DynamoDBDocumentClient.from(dynamoDBClient);
     }
 
     // isSubscribed determines if the given recipient address has subscribed.
@@ -79,35 +81,58 @@ export class DynamoDBSubscriptionService {
 
     // upsertSubscription will create a subscription for the given address if it does not already exist
     // and update any data on the existing record if a record does already exist.
-    async upsertSubscription(recipientAddress) {
+    async upsertSubscription(recipientAddress, subscriptionExpiryBlock) {
         if (!recipientAddress) {
             return
         }
         
         const normalizedAddress = recipientAddress.toLowerCase();
 
-        const input = {
-            TableName: SubscriptionsTableName,
-            Item: {
+        try {
+            const putItemInput = {
                 "recipient_address": {
                     S: normalizedAddress
                 },
                 "subscription_start_date": {
                     N: `${new Date().getTime()}`
                 }
-            },
-            ConditionExpression: "attribute_not_exists(recipient_address)"
-        };
+            };
 
-        try {
-            await this.dynamoDBClient.send(new PutItemCommand(input));
-        } catch(error) {
-            if ((error["__type"] || "").endsWith("ConditionalCheckFailedException")) {
-                console.debug(`Recipient '${normalizedAddress}' is already subscribed`);
-                return;
+            if (subscriptionExpiryBlock) {
+                putItemInput["subscription_expiry_block"] = {
+                    N: `${subscriptionExpiryBlock}`
+                }
             }
 
-            throw error;
+            await this.dynamoDBClient.send(new PutItemCommand({
+                TableName: SubscriptionsTableName,
+                Item: putItemInput,
+                ConditionExpression: "attribute_not_exists(recipient_address)"
+            }));
+
+            return;
+        } catch(error) {
+            if (!(error["__type"] || "").endsWith("ConditionalCheckFailedException")) {
+                throw error;
+            }
         }
+
+        if (subscriptionExpiryBlock) {
+            const blockUpdateCommand = new UpdateCommand({
+                TableName: SubscriptionsTableName,
+                Key: {
+                    "recipient_address": normalizedAddress
+                },
+                UpdateExpression: "set subscription_expiry_block = :subscriptionExpiryBlock",
+                ExpressionAttributeValues: {
+                    ":subscriptionExpiryBlock": `${subscriptionExpiryBlock}`
+                },
+                ReturnValues: "ALL_NEW"
+            })
+
+            await this.dynamoDBDocumentClient.send(blockUpdateCommand);
+        }
+
+        return;
     }
 }

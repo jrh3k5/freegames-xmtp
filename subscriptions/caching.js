@@ -27,7 +27,7 @@ export class CachingSubscriptionService {
         return await this.delegateService.unsubscribe(recipientAddress);
     }
 
-    async upsertSubscription(recipientAddress) {
+    async upsertSubscription(recipientAddress, subscriptionExpiryBlock) {
         const cacheKey = `subscribed-${recipientAddress}`;
         const cached = await this.cache.get(cacheKey);
         if (cached != undefined && !cached) {
@@ -35,6 +35,6 @@ export class CachingSubscriptionService {
             // that the user is not subscribed
             await this.cache.del(cacheKey);
         }
-        return await this.delegateService.upsertSubscription(recipientAddress);
+        return await this.delegateService.upsertSubscription(recipientAddress, subscriptionExpiryBlock);
     }
 }

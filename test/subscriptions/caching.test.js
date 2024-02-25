@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { CachingSubscriptionService } from "../../subscriptions/caching.js";
-import { recoverAddress } from "ethers";
 
 describe("Caching Subscriptions Service", () => {
     let cachedData;
