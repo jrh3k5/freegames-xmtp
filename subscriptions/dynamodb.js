@@ -48,7 +48,6 @@ export class DynamoDBSubscriptionService {
     async getSubscriptions(cursor) {
         const input = {
             TableName: SubscriptionsTableName,
-            IndexName: "active-index",
             FilterExpression: "active = :active",
             ExpressionAttributeValues: {
                 ":active": {
