@@ -11,7 +11,7 @@ services:
       AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
     volumes:
       - ./:/home/node/app
-    command: "npm run itest"
+    command: 'bash -c "npm i && npm run itest"'
   localstack:
     container_name: "localstack"
     image: localstack/localstack:3.0.2
