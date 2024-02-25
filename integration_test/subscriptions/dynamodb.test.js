@@ -8,11 +8,11 @@ describe("DynamoDB integration test", () => {
 
     beforeEach(() => {
         const awsRegion = "us-east-1";
-        const awsEndpointURL = "http://localstack:4566";
+        const awsEndpointURL = "http://localhost:4566";
 
         const awsConfig = {
             endpoint: awsEndpointURL,
-            region: awsRegion
+            region: awsRegion 
         };
         const dynamodbClient = new DynamoDBClient(awsConfig);
 

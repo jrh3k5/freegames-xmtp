@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "mocha --recursive --exit",
-    "itest": "echo 'Waiting for startup' && sleep 5 && echo 'Running tests' && mocha --recursive --exit integration_test"
+    "itest": "AWS_ACCESS_KEY_ID=lsitest AWS_SECRET_ACCESS_KEY=lsitestsecret mocha --recursive --exit integration_test"
   },
   "repository": {
     "type": "git",

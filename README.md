@@ -131,3 +131,11 @@ curl -i https://api.freestuffbot.xyz/v1/games/free \
   -H "Accept: application/json" \
   -H "Authorization: Basic <your API key here>"
 ```
+
+### Running Integration Tests
+
+If you wish to run the integration tests locally, execute the following:
+
+```
+docker compose -f docker-compose.integration_test.yml up localstack && npm run itest
+```
