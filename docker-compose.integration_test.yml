@@ -6,8 +6,6 @@ services:
       - localstack
     user: "node"
     working_dir: /home/node/app
-    env_file:
-      - .env
     environment:
       AWS_ACCESS_KEY_ID: anythingwilldoforlocalstack
       AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
