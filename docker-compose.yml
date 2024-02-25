@@ -42,10 +42,17 @@ services:
     command: "node bot.js"
   eth_monitor:
     image: node:18
+    depends_on:
+      - localstack
     user: "node"
     working_dir: /home/node/app
     env_file:
       - .env
+    environment:
+      AWS_ACCESS_KEY_ID: anythingwilldoforlocalstack
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
     volumes:
       - ./:/home/node/app
     command: "node eth_monitor.js"

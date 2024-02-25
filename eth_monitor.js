@@ -1,6 +1,9 @@
 import dotenv from "dotenv";
 import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+import { DynamoDBClient, waitUntilTableExists } from "@aws-sdk/client-dynamodb";
 import { Handler } from "./subscriptions/eth_send/handler.js";
+import { SubscriptionsTableName } from "./dynamodb/constants.js";
+import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 
 dotenv.config();
 
@@ -35,9 +38,25 @@ if (!minimumGwei) {
 
 console.log(`Subscribers must send at least ${minimumGwei} to subscribe`);
 
-console.log(`Monitoring for ETH sends to address ${receiptAddress} on ${settings.network}`);
+const awsConfig = {
+    endpoint: process.env.AWS_ENDPOINT,
+    region: process.env.AWS_REGION
+};
+const dynamodbClient = new DynamoDBClient(awsConfig);
 
-const sendHandler = new Handler(subscriptionDurationBlocks, minimumGwei);
+console.log("Waiting for subscriptions table presence");
+
+// Wait for the table to exist
+const results = await waitUntilTableExists({client: dynamodbClient, maxWaitTime: 30}, {TableName: SubscriptionsTableName})
+if (results.state !== 'SUCCESS') {
+    throw `Subscriptions table did not exist in sufficient time; result state was '${results.state}'`;
+}
+
+const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
+
+console.log(`Listening ETH sends to ${receiptAddress} on ${settings.network}`);
+
+const sendHandler = new Handler(subscriptionsService, subscriptionDurationBlocks, minimumGwei);
 new Alchemy(settings).ws.on(
     {
         method: AlchemySubscription.MINED_TRANSACTIONS,
