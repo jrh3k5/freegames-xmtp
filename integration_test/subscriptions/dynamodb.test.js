@@ -46,7 +46,8 @@ describe("DynamoDB integration test", () => {
                 page = await subscriptionsRepo.getSubscriptions(page.cursor);
             } while(page.recipientAddresses.length && page.cursor)
 
-            expect(returnedAddresses).to.have.lengthOf(99);
+            // Account for other tests' addresses showing up
+            expect(returnedAddresses.length).to.be.greaterThanOrEqual(99);
             expect(returnedAddresses).to.not.contain(deactivatedAddress);
         })
     })
