@@ -10,7 +10,8 @@ awslocal dynamodb create-table \
 
 awslocal dynamodb update-table \
     --table-name=subscriptions \
-    --attribute-definitions=AttributeName=active,AttributeType=S  \
+    --attribute-definitions AttributeName=active,AttributeType=S  \
+      AttributeName=receipient_address,AttributeType=S  \
     --global-secondary-index-updates \
         "[
             {
