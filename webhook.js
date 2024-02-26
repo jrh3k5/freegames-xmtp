@@ -35,11 +35,11 @@ if (results.state !== 'SUCCESS') {
 }
 const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
 
-const cache = newCache();
+const imageCache = newCache(3600); // cache images for one hour
 
 // Image metadata resolution
 const imageMetadataRetriever = new Retriever();
-const cachingImageMetadataRetriever = new CachingRetriever(imageMetadataRetriever, cache);
+const cachingImageMetadataRetriever = new CachingRetriever(imageMetadataRetriever, imageCache);
 
 // SQS
 const sqsClient = new SQSClient(awsConfig);
