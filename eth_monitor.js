@@ -32,12 +32,12 @@ const subscriptionDurationBlocks = blocksPerMinute * subscriptionDurationMinutes
 
 console.log(`New subscriptions will subscribe for ${subscriptionDurationMinutes} minutes; at ${blocksPerMinute} BPM, each subscription will last for ${subscriptionDurationBlocks} blocks`);
 
-const minimumGwei = process.env.SUBSCRIPTION_MINIMUM_GWEI;
-if (!minimumGwei) {
-    throw "No gwei minimum specified";
+const minimumWei = process.env.SUBSCRIPTION_MINIMUM_GWEI;
+if (!minimumWei) {
+    throw "No wei minimum specified";
 }
 
-console.log(`Subscribers must send at least ${minimumGwei} to subscribe`);
+console.log(`Subscribers must send at least ${minimumWei} to subscribe`);
 
 const awsConfig = {
     endpoint: process.env.AWS_ENDPOINT,
@@ -58,7 +58,7 @@ const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
 console.log(`Listening ETH sends to ${receiptAddress} on ${settings.network}`);
 
 const xmtpClient = await newClient(process.env.KEY, process.env.XMTP_ENV);
-const sendHandler = new Handler(subscriptionsService, subscriptionDurationBlocks, minimumGwei, xmtpClient);
+const sendHandler = new Handler(subscriptionsService, subscriptionDurationBlocks, minimumWei, xmtpClient);
 
 new Alchemy(settings).ws.on(
     {

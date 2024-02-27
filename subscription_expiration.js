@@ -5,6 +5,7 @@ import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 import { ExpirationHandler } from "./subscriptions/expiration_handler.js";
 import { schedule } from 'node-cron';
 import { Network, Alchemy } from "alchemy-sdk";
+import { newClient } from "./xmtp/client.js";
 
 dotenv.config();
 
@@ -23,7 +24,12 @@ if (results.state !== 'SUCCESS') {
     throw `Subscriptions table did not exist in sufficient time; result state was '${results.state}'`;
 }
 const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
-const expirationHandler = new ExpirationHandler(subscriptionsService);
+const xmtpClient = await newClient(process.env.KEY, process.env.XMTP_ENV);
+const minimumWei = parseInt(process.env.SUBSCRIPTION_MINIMUM_GWEI);
+if (!minimumWei) {
+    throw "A wei minimum must be specified";
+}
+const expirationHandler = new ExpirationHandler(subscriptionsService, xmtpClient, minimumWei, "subscribe.gamedeals.eth");
 
 const settings = {
     apiKey: process.env.ALCHEMY_API_KEY,
