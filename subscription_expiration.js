@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { DynamoDBClient, waitUntilTableExists } from "@aws-sdk/client-dynamodb";
 import { SubscriptionsTableName } from "./dynamodb/constants.js"
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
-import { ExpirationHandler } from "./subscriptions/expiration_handler.js.js";
+import { ExpirationHandler } from "./subscriptions/expiration_handler.js";
 import { schedule } from 'node-cron';
 import { Network, Alchemy } from "alchemy-sdk";
 
@@ -40,8 +40,16 @@ if (!settings.network) {
 
 const alchemy = new Alchemy(settings);
 const cronPattern = process.env.SUBSCRIPTION_DEACTIVATION_CRON || "0 0 0 * * *";
+
+console.log(`Scheduling subscription deactivation with cron pattern ${cronPattern}`);
+
 schedule(cronPattern, async () => {
-    const latestBlock = await alchemy.core.getBlockNumber();
-    console.log(`Expiring all subscriptions at or before block ${latestBlock}`);
-    await expirationHandler(latestBlock);
+    try {
+        const latestBlock = await alchemy.core.getBlockNumber();
+        console.log(`Expiring all subscriptions at or before block ${latestBlock}`);
+        const expirationCount = await expirationHandler.deactivateExpiredSubscriptions(latestBlock);
+        console.log(`Expired ${expirationCount} subscriptions`);
+    } catch(e) {
+        console.error("Failed to execute subscription cleanup", e);
+    }
 });
