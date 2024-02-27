@@ -46,7 +46,7 @@ const sqsClient = new SQSClient(awsConfig);
 const gameNotifier = new GameNotifier(sqsClient, gameNotificationQueueURL);
 
 // XMTP
-const xmtpClient = await  newClient(process.env.KEY, process.env.XMTP_ENV, [new AttachmentCodec()]);
+const xmtpClient = await newClient(process.env.KEY, process.env.XMTP_ENV, [new AttachmentCodec()]);
 
 const xmtpNotifier = new Notifier(xmtpClient, cachingImageMetadataRetriever);
 

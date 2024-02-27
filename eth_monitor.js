@@ -4,6 +4,7 @@ import { DynamoDBClient, waitUntilTableExists } from "@aws-sdk/client-dynamodb";
 import { Handler } from "./subscriptions/eth_send/handler.js";
 import { SubscriptionsTableName } from "./dynamodb/constants.js";
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
+import { newClient } from "./xmtp/client.js";
 
 dotenv.config();
 
@@ -56,7 +57,9 @@ const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
 
 console.log(`Listening ETH sends to ${receiptAddress} on ${settings.network}`);
 
-const sendHandler = new Handler(subscriptionsService, subscriptionDurationBlocks, minimumGwei);
+const xmtpClient = await newClient(process.env.KEY, process.env.XMTP_ENV);
+const sendHandler = new Handler(subscriptionsService, subscriptionDurationBlocks, minimumGwei, xmtpClient);
+
 new Alchemy(settings).ws.on(
     {
         method: AlchemySubscription.MINED_TRANSACTIONS,

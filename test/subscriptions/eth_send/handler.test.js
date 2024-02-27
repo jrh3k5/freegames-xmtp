@@ -3,10 +3,12 @@ import { Handler } from "../../../subscriptions/eth_send/handler.js";
 
 describe("ETH Send Handler", () => {
     let subscriptions;
+    let sentMessages;
     let handler;
 
     beforeEach(() => {
         subscriptions = [];
+        sentMessages = [];
 
         const minimumGwei = 4000;
         const subscriptionDurationBlocks = 60;
@@ -19,7 +21,17 @@ describe("ETH Send Handler", () => {
             });
         };
 
-        handler = new Handler(subscriptionService, subscriptionDurationBlocks, minimumGwei);
+        const xmtpClient = {};
+        xmtpClient.conversations = {};
+        xmtpClient.conversations.newConversation = async () => {
+            const conversation = {};
+            conversation.send = async message => {
+                sentMessages.push(message);
+            }
+            return conversation;
+        }
+
+        handler = new Handler(subscriptionService, subscriptionDurationBlocks, minimumGwei, xmtpClient);
     })
 
     describe("when the given gwei is less than the minimum amount", () => {
@@ -40,6 +52,9 @@ describe("ETH Send Handler", () => {
             expect(subscriptions).to.have.lengthOf(1);
             expect(subscriptions[0].address).to.equal(senderAddress);
             expect(subscriptions[0].subscriptionExpiryBlock).lessThanOrEqual(blockNumber + 60);
+
+            // The user should have been sent a salutation message
+            expect(sentMessages).to.not.be.empty;
         })
     })
 })

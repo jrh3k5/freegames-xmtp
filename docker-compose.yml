@@ -53,6 +53,7 @@ services:
       AWS_ENDPOINT: http://localstack:4566
       AWS_REGION: us-east-1
       AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
+      XMTP_ENV: production
     volumes:
       - ./:/home/node/app
     command: "node eth_monitor.js"
