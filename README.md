@@ -53,7 +53,6 @@ To configure this behavior, supply the following parameters:
 * `SUBSCRIPTION_MINIMUM_GWEI`: the minimum amount of gwei a user must send to the configured receipt address to subscribe to the bot
 * `SUBSCRIPTION_NETWORK_BLOCKS_PER_MINUTE` (default: 30): the number of blocks the configured network produces in a minute
 
-
 #### Kill Switches
 
 This supports the following kill switches:
@@ -88,6 +87,12 @@ To launch the bot that handles user engagement, execute:
 
 ```
 node bot.js
+```
+
+To launch the process that listens for user ETH sends to register them, execute:
+
+```
+node eth_monitor.js
 ```
 
 ## Troubleshooting
