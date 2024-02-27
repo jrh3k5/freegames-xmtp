@@ -10,7 +10,7 @@ describe("ETH Send Handler", () => {
         subscriptions = [];
         sentMessages = [];
 
-        const minimumWwei = 4000;
+        const minimumWei = 4000;
         const subscriptionDurationBlocks = 60;
 
         const subscriptionService = {};
