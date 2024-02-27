@@ -33,7 +33,7 @@ describe("DynamoDB integration test", () => {
             await subscriptionsRepo.unsubscribe(deactivatedAddress);
 
             const returnedAddresses = [];
-            let page = await subscriptionsRepo.getSubscriptions();
+            let page = await subscriptionsRepo.getSubscriptionAddresses();
             do {
                 if (!page) {
                     break
@@ -43,7 +43,9 @@ describe("DynamoDB integration test", () => {
                     returnedAddresses.push(receipientAddress);
                 })
 
-                page = await subscriptionsRepo.getSubscriptions(page.cursor);
+                page = await subscriptionsRepo.getSubscriptionAddresses({
+                    cursor: page.cursor
+                });
             } while(page.recipientAddresses.length && page.cursor)
 
             // Account for other tests' addresses showing up

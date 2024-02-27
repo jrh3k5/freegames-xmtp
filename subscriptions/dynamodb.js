@@ -39,13 +39,21 @@ export class DynamoDBSubscriptionService {
         return activeRecord && activeRecord.S === "true";
     }
 
-    // getSubscriptions gets the stored subscriptions as a SubscriptionsPage instance.
+    // Gets the stored subscriptions as a SubscriptionsPage instance.
+    // The options parameter is optional and can contain the following properties:
+    //  - cursor: the cursor from which searching should start (default: no cursor)
     // If a cursor is given, then the returned results will be a page starting from the
     // the given cursor. If the returned page has no results, it should be assumed that
     // there are no more subscriptions to be retrieved.
     // If the returned page has no cursor, it should, also, be treated as if there are no
     // more items to retrieve.
-    async getSubscriptions(cursor) {
+    async getSubscriptionAddresses(options) {
+        let cursor;
+
+        if (options) {
+            
+        }
+
         const input = {
             TableName: SubscriptionsTableName,
             FilterExpression: "active = :active",
