@@ -1,4 +1,4 @@
-import { GetItemCommand, DeleteItemCommand, PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { SubscriptionsTableName } from "../dynamodb/constants.js";
 import { SubscriptionsPage } from "./model.js";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
@@ -105,7 +105,7 @@ export class DynamoDBSubscriptionService {
             UpdateExpression: "set active = :active",
             ExpressionAttributeValues: {
                 ":active": "false"
-            },
+            }
         })
 
         await this.dynamoDBDocumentClient.send(activeUpdateCommand);
