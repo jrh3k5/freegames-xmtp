@@ -57,4 +57,29 @@ describe("ETH Send Handler", () => {
             expect(sentMessages).to.not.be.empty;
         })
     })
+
+    describe("the allowlist has at least one entry", () => {
+        let allowListedAddress;
+
+        beforeEach(() => {
+            allowListedAddress = "0xallowed";
+            const allowList = [allowListedAddress];
+            handler.allowList = allowList;
+        })
+
+        describe("the sender address is in the allowlist", () => {
+            it("subscribes the address", async () => {
+                await handler.handle(allowListedAddress, 123456, 4000);
+                expect(subscriptions).to.have.lengthOf(1);
+                expect(subscriptions[0].address).to.equal(allowListedAddress);
+            })
+        })
+
+        describe("the sender address is not in the allowlist", () => {
+            it("does not subscribe the address", async () => {
+                await handler.handle("0xnotallowed", 123456, 4000);
+                expect(subscriptions).to.be.empty;
+            })
+        })
+    })
 })

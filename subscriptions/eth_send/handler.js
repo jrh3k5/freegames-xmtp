@@ -1,14 +1,20 @@
 export class Handler {
-    constructor(subscriptionService, subscriptionDurationBlocks, minimumWei, xmtpClient) {
+    constructor(subscriptionService, subscriptionDurationBlocks, minimumWei, xmtpClient, allowList) {
         this.subscriptionService = subscriptionService;
         this.subscriptionDurationBlocks = subscriptionDurationBlocks;
         this.minimumWei = minimumWei;
         this.xmtpClient = xmtpClient;
+        this.allowList = (allowList || []).map(a => a.toLowerCase());
     }
 
     async handle(senderAddress, blockNumber, amount) {
         if (amount < this.minimumWei) {
-            return
+            return;
+        }
+
+        const normalizedAddress = senderAddress.toLowerCase();
+        if (this.allowList.length && this.allowList.indexOf(normalizedAddress) < 0) {
+            return;
         }
 
         await this.subscriptionService.upsertSubscription(senderAddress, blockNumber + this.subscriptionDurationBlocks);
