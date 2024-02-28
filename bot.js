@@ -8,6 +8,7 @@ import { newCache } from "./cache/cache.js";
 import { getDefaultRecipients } from "./xmtp/notify/recipients.js";
 import { newClient } from "./xmtp/client.js";
 import { run } from "./xmtp/bot_runner.js"
+import { getAllowList } from "./subscriptions/allowlist.js";
 
 dotenv.config();
 
@@ -37,10 +38,9 @@ for (let i = 0; i < defaultRecipients.length; i++) {
     await cachingSubscriptionsService.upsertSubscription(defaultRecipients[i]);
 }
 
-let allowList;
-if (process.env.XMTP_BOT_SUBSCRIBE_ALLOWLIST) {
-    allowList = process.env.XMTP_BOT_SUBSCRIBE_ALLOWLIST.split(",").map(address => address.toLowerCase());
-    console.log(`Limiting subscriptions to ${allowList.length} allowlisted addresses`)
+const allowList = getAllowList();
+if (allowList && allowList.length) {
+    console.log(`Limiting subscriptions to ${allowList.length} addresses`);
 }
 
 const botHandler = newBotHandler(cachingSubscriptionsService, allowList);

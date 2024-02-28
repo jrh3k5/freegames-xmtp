@@ -5,6 +5,7 @@ import { Handler } from "./subscriptions/eth_send/handler.js";
 import { SubscriptionsTableName } from "./dynamodb/constants.js";
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 import { newClient } from "./xmtp/client.js";
+import { getAllowList } from "./subscriptions/allowlist.js";
 
 dotenv.config();
 
@@ -58,7 +59,11 @@ const subscriptionsService = new DynamoDBSubscriptionService(dynamodbClient);
 console.log(`Listening ETH sends to ${receiptAddress} on ${settings.network}`);
 
 const xmtpClient = await newClient(process.env.KEY, process.env.XMTP_ENV);
-const sendHandler = new Handler(subscriptionsService, subscriptionDurationBlocks, minimumWei, xmtpClient);
+const allowList = getAllowList();
+if (allowList && allowList.length) {
+    console.log(`Limiting subscriptions to ${allowList.length} addresses`);
+}
+const sendHandler = new Handler(subscriptionsService, subscriptionDurationBlocks, minimumWei, xmtpClient, allowList);
 
 new Alchemy(settings).ws.on(
     {
