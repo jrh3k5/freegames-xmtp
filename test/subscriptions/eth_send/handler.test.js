@@ -10,7 +10,7 @@ describe("ETH Send Handler", () => {
         subscriptions = [];
         sentMessages = [];
 
-        const minimumGwei = 4000;
+        const minimumWei = 4000;
         const subscriptionDurationBlocks = 60;
 
         const subscriptionService = {};
@@ -31,7 +31,7 @@ describe("ETH Send Handler", () => {
             return conversation;
         }
 
-        handler = new Handler(subscriptionService, subscriptionDurationBlocks, minimumGwei, xmtpClient);
+        handler = new Handler(subscriptionService, subscriptionDurationBlocks, minimumWei, xmtpClient);
     })
 
     describe("when the given gwei is less than the minimum amount", () => {

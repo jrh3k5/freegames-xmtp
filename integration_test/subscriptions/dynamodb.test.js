@@ -33,7 +33,7 @@ describe("DynamoDB integration test", () => {
             await subscriptionsRepo.unsubscribe(deactivatedAddress);
 
             const returnedAddresses = [];
-            let page = await subscriptionsRepo.getSubscriptions();
+            let page = await subscriptionsRepo.getSubscriptionAddresses();
             do {
                 if (!page) {
                     break
@@ -43,12 +43,51 @@ describe("DynamoDB integration test", () => {
                     returnedAddresses.push(receipientAddress);
                 })
 
-                page = await subscriptionsRepo.getSubscriptions(page.cursor);
+                page = await subscriptionsRepo.getSubscriptionAddresses({
+                    cursor: page.cursor
+                });
             } while(page.recipientAddresses.length && page.cursor)
 
             // Account for other tests' addresses showing up
             expect(returnedAddresses.length).to.be.greaterThanOrEqual(99);
             expect(returnedAddresses).to.not.contain(deactivatedAddress);
+        })
+
+        describe("with a subscription expiry block threshold", () => {
+            it("gets the subscriptions that expired at or before the given block number", async () => {
+                const expiryBlock = 36;
+                const notExpiredAddress = "0xnotexpired";
+                await subscriptionsRepo.upsertSubscription(notExpiredAddress, expiryBlock + 1);
+
+                const expiredAddress = "0xexpired";
+                await subscriptionsRepo.upsertSubscription(expiredAddress, expiryBlock - 1);
+
+                const atThresholdAddress = "0xatthreshold";
+                await subscriptionsRepo.upsertSubscription(atThresholdAddress, expiryBlock);
+
+                const returnedAddresses = [];
+                let page = await subscriptionsRepo.getSubscriptionAddresses({
+                    expiryThreshold: expiryBlock
+                });
+                do {
+                    if (!page) {
+                        break
+                    }
+    
+                    page.recipientAddresses.forEach(receipientAddress => {
+                        returnedAddresses.push(receipientAddress);
+                    })
+    
+                    page = await subscriptionsRepo.getSubscriptionAddresses({
+                        cursor: page.cursor,
+                        expiryThreshold: expiryBlock
+                    });
+                } while(page.recipientAddresses.length && page.cursor)
+
+                expect(returnedAddresses).to.contain(expiredAddress);
+                expect(returnedAddresses).to.contain(atThresholdAddress);
+                expect(returnedAddresses).to.not.contain(notExpiredAddress);
+            })
         })
     })
 

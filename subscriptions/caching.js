@@ -21,9 +21,9 @@ export class CachingSubscriptionService {
         return isSubscribed;
     }
 
-    async getSubscriptions(cursor) {
+    async getSubscriptionAddresses(options) {
         // deliberately not caching this
-        return await this.delegateService.getSubscriptions(cursor);
+        return await this.delegateService.getSubscriptionAddresses(options);
     }
 
     async unsubscribe(recipientAddress) {

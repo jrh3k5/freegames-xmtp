@@ -53,6 +53,11 @@ To configure this behavior, supply the following parameters:
 * `SUBSCRIPTION_MINIMUM_GWEI`: the minimum amount of gwei a user must send to the configured receipt address to subscribe to the bot
 * `SUBSCRIPTION_NETWORK_BLOCKS_PER_MINUTE` (default: 30): the number of blocks the configured network produces in a minute
 
+###### Configuring Suspension of Expired Subscriptions
+
+By default, using the [node-cron](https://www.npmjs.com/package/node-cron) library, a task runs at `0 0 0 * * *` (midnight each day) to iterate over expired subscriptions and deactivate them. With each deactivation, the user is notified that their subscription has been deactivated.
+
+The frequency with which this task runs can be controlled by setting the `SUBSCRIPTION_DEACTIVATION_CRON` environmental variable equal to the desired cron pattern.
 
 #### Kill Switches
 
@@ -88,6 +93,12 @@ To launch the bot that handles user engagement, execute:
 
 ```
 node bot.js
+```
+
+To launch the process that listens for user ETH sends to register them, execute:
+
+```
+node eth_monitor.js
 ```
 
 ## Troubleshooting

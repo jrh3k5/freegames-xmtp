@@ -61,13 +61,15 @@ export function consumeGameNotifications(sqsClient,
                 return
             }
 
-            let subscriptionsResult = await subscriptionsService.getSubscriptions();
+            let subscriptionsResult = await subscriptionsService.getSubscriptionAddresses();
             do {
                 const promises = subscriptionsResult.recipientAddresses.map(recipientAddress => enqueueUserNotification(recipientAddress, gameDetails, sqsClient, userSQSQueueURL));
 
                 await Promise.all(promises);
     
-                subscriptionsResult = await subscriptionsService.getSubscriptions(subscriptionsResult.cursor);
+                subscriptionsResult = await subscriptionsService.getSubscriptionAddresses({
+                    cursor: subscriptionsResult.cursor
+                });
             } while(subscriptionsResult.recipientAddresses.length && subscriptionsResult.cursor)
         }
     });

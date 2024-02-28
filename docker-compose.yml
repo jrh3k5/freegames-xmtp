@@ -57,6 +57,25 @@ services:
     volumes:
       - ./:/home/node/app
     command: "node eth_monitor.js"
+  subscription_expiration:
+    image: node:18
+    depends_on:
+      - localstack
+    user: "node"
+    working_dir: /home/node/app
+    env_file:
+      - .env
+    environment:
+      AWS_ACCESS_KEY_ID: anythingwilldoforlocalstack
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      AWS_SECRET_ACCESS_KEY: anythingwilldoforlocalstack
+      # Run the task every 15 seconds to facilitate testing
+      SUBSCRIPTION_DEACTIVATION_CRON: "*/15 * * * * *"
+      XMTP_ENV: production
+    volumes:
+      - ./:/home/node/app
+    command: "node subscription_expiration.js"
   localstack:
     container_name: "localstack"
     image: localstack/localstack:3.0.2

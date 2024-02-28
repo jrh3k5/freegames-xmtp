@@ -1,17 +1,15 @@
 export class Handler {
-    constructor(subscriptionService, subscriptionDurationBlocks, minimumGwei, xmtpClient) {
+    constructor(subscriptionService, subscriptionDurationBlocks, minimumWei, xmtpClient) {
         this.subscriptionService = subscriptionService;
         this.subscriptionDurationBlocks = subscriptionDurationBlocks;
-        this.minimumGwei = minimumGwei;
+        this.minimumWei = minimumWei;
         this.xmtpClient = xmtpClient;
     }
 
     async handle(senderAddress, blockNumber, amount) {
-        if (amount < this.minimumGwei) {
+        if (amount < this.minimumWei) {
             return
         }
-
-        console.log(`${senderAddress} sent ${amount} gwei and would be subscribed for ${this.subscriptionDurationBlocks} blocks`);
 
         await this.subscriptionService.upsertSubscription(senderAddress, blockNumber + this.subscriptionDurationBlocks);
 

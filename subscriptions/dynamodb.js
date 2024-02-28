@@ -1,4 +1,4 @@
-import { GetItemCommand, DeleteItemCommand, PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, PutItemCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { SubscriptionsTableName } from "../dynamodb/constants.js";
 import { SubscriptionsPage } from "./model.js";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
@@ -39,25 +39,41 @@ export class DynamoDBSubscriptionService {
         return activeRecord && activeRecord.S === "true";
     }
 
-    // getSubscriptions gets the stored subscriptions as a SubscriptionsPage instance.
+    // Gets the stored subscriptions as a SubscriptionsPage instance.
+    // The options parameter is optional and can contain the following properties:
+    //  - cursor: the cursor from which searching should start (default: no cursor)
+    //  - expiryThreshold: the block number that a subscription must expire at or before
     // If a cursor is given, then the returned results will be a page starting from the
     // the given cursor. If the returned page has no results, it should be assumed that
     // there are no more subscriptions to be retrieved.
     // If the returned page has no cursor, it should, also, be treated as if there are no
     // more items to retrieve.
-    async getSubscriptions(cursor) {
-        const input = {
-            TableName: SubscriptionsTableName,
-            FilterExpression: "active = :active",
-            ExpressionAttributeValues: {
-                ":active": {
-                    S: "true"
-                }
+    async getSubscriptionAddresses(options) {
+        let filterExpressions = ["active = :active"];
+        let expressionAttributeValues = {
+            ":active": {
+                S: "true"
             }
         };
 
-        if (cursor) {
-            input.ExclusiveStartKey = cursor;
+        if (options) {
+            const expiryThreshold = options.expiryThreshold;
+            if (expiryThreshold) {
+                filterExpressions.push("subscription_expiry_block <= :expiryThreshold")
+                expressionAttributeValues[":expiryThreshold"] = {
+                    N: parseInt(expiryThreshold)
+                }
+            }
+        }
+
+        const input = {
+            TableName: SubscriptionsTableName,
+            FilterExpression: filterExpressions.join(" and "),
+            ExpressionAttributeValues: expressionAttributeValues
+        };
+
+        if (options && options.cursor) {
+            input.ExclusiveStartKey = options.cursor;
         }
 
         const scanResult = await this.dynamoDBClient.send(new ScanCommand(input));
@@ -89,7 +105,7 @@ export class DynamoDBSubscriptionService {
             UpdateExpression: "set active = :active",
             ExpressionAttributeValues: {
                 ":active": "false"
-            },
+            }
         })
 
         await this.dynamoDBDocumentClient.send(activeUpdateCommand);
@@ -144,7 +160,7 @@ export class DynamoDBSubscriptionService {
 
         if (subscriptionExpiryBlock) {
             updateExpressions.push("subscription_expiry_block = :subscriptionExpiryBlock")
-            expressionAttributeValues[":subscriptionExpiryBlock"] = `${subscriptionExpiryBlock}`
+            expressionAttributeValues[":subscriptionExpiryBlock"] = parseInt(subscriptionExpiryBlock)
         }
 
         const blockUpdateCommand = new UpdateCommand({
