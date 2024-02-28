@@ -5,7 +5,7 @@ import { Handler } from "./subscriptions/eth_send/handler.js";
 import { SubscriptionsTableName } from "./dynamodb/constants.js";
 import { DynamoDBSubscriptionService } from "./subscriptions/dynamodb.js";
 import { newClient } from "./xmtp/client.js";
-import { getAllowlist } from "./subscriptions/allowlist.js";
+import { getAllowList } from "./subscriptions/allowlist.js";
 
 dotenv.config();
 
