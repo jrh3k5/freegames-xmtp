@@ -31,14 +31,18 @@ describe("bot subscription", () => {
             // Wait long enough for a response
             await sleep(1000);
 
-            const getMessages = async () => {
+            const getLastMessage = async () => {
                 const messages = await conversation.messages({
                     limit: 100
                 });
-                return messages.map(m => m.content);
+                if (!messages.length) {
+                    return null;
+                }
+
+                return messages[0].content;
             }
 
-            expect(await getMessages()).to.contain("You are now subscribed");
+            expect(await getLastMessage()).to.contain("You are now subscribed");
         })
     })
 })
