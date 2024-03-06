@@ -36,37 +36,23 @@ describe("User Notification Handler", () => {
 
         const recipientAddress = "address.recipient";
 
+        const data = {
+            gameID: gameID,
+            gameTitle: gameTitle,
+            gameDescription: gameDescription,
+            storeURL: storeURL,
+            originalPrice: originalPrice,
+            store: store,
+            currentPrice: currentPrice,
+            imageURL: imageURL,
+            kind: kind
+        };
+
         const message = {
+            Body: JSON.stringify(data),
             MessageAttributes: {
-                GameID: {
-                    StringValue: gameID
-                },
                 RecipientAddress: {
                     StringValue: recipientAddress
-                },
-                GameTitle: {
-                    StringValue: gameTitle
-                },
-                GameDescription: {
-                    StringValue: gameDescription
-                },
-                StoreURL: {
-                    StringValue: storeURL
-                },
-                OriginalPrice: {
-                    StringValue: originalPrice
-                },
-                Store: {
-                    StringValue: store
-                },
-                CurrentPrice: {
-                    StringValue: currentPrice
-                },
-                ImageURL: {
-                    StringValue: imageURL
-                },
-                Kind: {
-                    StringValue: kind
                 }
             }
         };

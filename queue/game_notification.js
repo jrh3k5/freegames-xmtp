@@ -14,39 +14,30 @@ export function consumeGameNotifications(sqsClient,
         batchSize: 10,
         waitTimeSeconds: parseInt(waitTimeSeconds) || 20,
         pollingWaitTimeMs: parseInt(pollingWaitTimeMs) || 20000,
-        messageAttributeNames: [
-            "GameID", 
-            "GameTitle", 
-            "GameDescription", 
-            "StoreURL", 
-            "OriginalPrice", 
-            "Store", 
-            "NotifyDefaultRecipientsOnly", 
-            "CurrentPrice", 
-            "ImageURL",
-            "ExpiryDate",
-            "Kind"
-        ],
         sqs: sqsClient,
         queueUrl: gameSQSQueueURL,
+        messageAttributeNames: [
+            "NotifyDefaultRecipientsOnly"
+        ],
         handleMessage: async (message) => {
-            const gameID = message.MessageAttributes.GameID.StringValue;
-            const gameTitle = message.MessageAttributes.GameTitle.StringValue;
-            const gameDescription = message.MessageAttributes.GameDescription.StringValue;
-            const storeURL = message.MessageAttributes.StoreURL.StringValue;
-            const store = message.MessageAttributes.Store.StringValue;
-            const currentPrice = message.MessageAttributes.CurrentPrice.StringValue;
-            const imageURL = message.MessageAttributes.ImageURL.StringValue;
-            const kind = message.MessageAttributes.Kind.StringValue;
+            const messageData = JSON.parse(message.Body);
+            const gameID = messageData.gameID;
+            const gameTitle = messageData.gameTitle;
+            const gameDescription = messageData.gameDescription;
+            const storeURL = messageData.storeURL;
+            const store = messageData.store;
+            const currentPrice = messageData.currentPrice;
+            const imageURL = messageData.imageURL;
+            const kind = messageData.kind;
 
             let originalPrice;
-            if (message.MessageAttributes.OriginalPrice) {
-                originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
+            if (messageData.originalPrice) {
+                originalPrice = messageData.originalPrice;
             }
 
             let expiryDate;
-            if (message.MessageAttributes.ExpiryDate) {
-                expiryDate = new Date(message.MessageAttributes.ExpiryDate.StringValue);
+            if (messageData.expiryDate) {
+                expiryDate = new Date(messageData.expiryDate);
             }
 
             const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store, currentPrice, imageURL, expiryDate, kind);
@@ -94,41 +85,26 @@ export class GameNotifier {
     async notify(gameDetails, notifyDefaultOnly) {
         const gameID = gameDetails.gameID;
         
-        const messageAttributes = {
-            "GameID": {
-                DataType: "String",
-                StringValue: gameID
-            },
-            "GameTitle": {
-                DataType: "String",
-                StringValue: gameDetails.gameTitle
-            },
-            "GameDescription": {
-                DataType: "String",
-                StringValue: gameDetails.gameDescription
-            },
-            "StoreURL": {
-                DataType: "String",
-                StringValue: gameDetails.url
-            },
-            "Store": {
-                DataType: "String",
-                StringValue: gameDetails.store
-            },
-            "CurrentPrice": {
-                DataType: "String",
-                StringValue: `${gameDetails.currentPrice}`
-            },
-            "ImageURL": {
-                DataType: "String",
-                StringValue: gameDetails.imageURL
-            },
-            "Kind": {
-                DataType: "String",
-                StringValue: gameDetails.kind
-            }
+        const data = {
+            gameID: gameID,
+            gameTitle: gameDetails.gameTitle,
+            gameDescription: gameDetails.gameDescription,
+            url: gameDetails.url,
+            store: gameDetails.store,
+            currentPrice: `${gameDetails.currentPrice}`,
+            imageURL: gameDetails.imageURL,
+            kind: gameDetails.kind
         };
 
+        if (gameDetails.expiryDate) {
+            data.expiryDate = gameDetails.expiryDate.toISOString()
+        }
+
+        if (gameDetails.originalPrice) {
+            data.originalPrice = `${gameDetails.originalPrice.toFixed(2)}`;
+        }
+
+        const messageAttributes = {};
         if (notifyDefaultOnly) {
             messageAttributes["NotifyDefaultRecipientsOnly"] = {
                 DataType: "String",
@@ -136,24 +112,10 @@ export class GameNotifier {
             }
         }
 
-        if (gameDetails.expiryDate) {
-            messageAttributes["ExpiryDate"] = {
-                DataType: "String",
-                StringValue: gameDetails.expiryDate.toISOString()
-            }
-        }
-
-        if (gameDetails.originalPrice) {
-            messageAttributes["OriginalPrice"] = {
-                DataType: "String",
-                StringValue: `${gameDetails.originalPrice.toFixed(2)}`
-            }
-        }
-
         const input = {
             QueueUrl: this.queueURL,
             MessageAttributes: messageAttributes,
-            MessageBody: "_", // placeholder to satisfy minimum requirement
+            MessageBody: JSON.stringify(data),
             MessageGroupId: gameID,
             MessageDeduplicationId: gameID
         };
@@ -165,63 +127,36 @@ export class GameNotifier {
 async function enqueueUserNotification(recipientAddress, gameDetails, sqsClient, queueUrl) {
     const gameID = gameDetails.gameID;
 
-    const messageAttributes = {
-        "GameID": {
-            DataType: "String",
-            StringValue: gameID
-        },
-        "GameTitle": {
-            DataType: "String",
-            StringValue: gameDetails.gameTitle
-        },
-        "GameDescription": {
-            DataType: "String",
-            StringValue: gameDetails.gameDescription
-        },
-        "RecipientAddress": {
-            DataType: "String",
-            StringValue: recipientAddress
-        },
-        "StoreURL": {
-            DataType: "String",
-            StringValue: gameDetails.url
-        },
-        "Store": {
-            DataType: "String",
-            StringValue: gameDetails.store
-        },
-        "CurrentPrice": {
-            DataType: "String",
-            StringValue: `${gameDetails.currentPrice}`
-        },
-        "ImageURL": {
-            DataType: "String",
-            StringValue: gameDetails.imageURL
-        },
-        "Kind": {
-            DataType: "String",
-            StringValue: gameDetails.kind
-        }
+    const data = {
+        gameID: gameID,
+        gameTitle: gameDetails.gameTitle,
+        gameDescription: gameDetails.gameDescription,
+        storeURL: gameDetails.url,
+        store: gameDetails.store,
+        currentPrice: `${gameDetails.currentPrice}`,
+        imageURL: gameDetails.imageURL,
+        kind: gameDetails.kind
     };
 
     if (gameDetails.expiryDate) {
-        messageAttributes["ExpiryDate"] = {
-            DataType: "String",
-            StringValue: gameDetails.expiryDate.toISOString()
-        }
+        data.expiryDate = gameDetails.expiryDate.toISOString();
     }
 
     if (gameDetails.originalPrice) {
-        messageAttributes["OriginalPrice"] = {
-            DataType: "String",
-            StringValue: `${gameDetails.originalPrice}`
-        }
+        data.originalPrice = `${gameDetails.originalPrice}`;
     }
+
+    const messageAttributes = {
+        "RecipientAddress": {
+            DataType: "String",
+            StringValue: recipientAddress
+        }
+    };
 
     const input = {
         QueueUrl: queueUrl,
         MessageAttributes: messageAttributes,
-        MessageBody: "_", // placeholder to satisfy minimum requirement
+        MessageBody: JSON.stringify(data),
         MessageGroupId: gameID,
         MessageDeduplicationId: `${gameID}-${recipientAddress}`
     };
