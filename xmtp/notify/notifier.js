@@ -20,7 +20,7 @@ export class Notifier {
         }
 
         const storeName = getHumanReadableStoreName(gameDetails.store);
-        let message = `${gameDetails.gameTitle}\n\nGet it from ${storeName} here: ${gameDetails.url}\n\nIf this link doesn't open properly in your app's embedded browser, try copying the link directly into your phone's browser.`;
+        let message = `${gameDetails.gameTitle}\n\nGet it from ${storeName} here: ${gameDetails.storeURL}\n\nIf this link doesn't open properly in your app's embedded browser, try copying the link directly into your phone's browser.`;
         if (gameDetails.originalPrice) {
             let expirationString = "forever";
             if (gameDetails.expiryDate) {

@@ -41,7 +41,7 @@ describe("bot subscription", () => {
                     return null;
                 }
 
-                return nonSenderMessages[nonSenderMessages.length - 1].content;
+                return `${nonSenderMessages[nonSenderMessages.length - 1].content}`;
             }
 
             expect(await getLastMessage()).to.contain("You are now subscribed");
@@ -60,7 +60,9 @@ describe("bot subscription", () => {
             // Wait for the message to make its way through the system
             await sleep(2000);
 
-            expect(await getLastMessage()).to.contain("Free game");
+            const gameDealMessage = await getLastMessage();
+            expect(gameDealMessage).to.contain("Free game");
+            expect(gameDealMessage).to.contain("https://redirect.freestuffbot.xyz"); // make sure that the store URL is passed along successfully
         })
     })
 })
