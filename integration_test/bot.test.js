@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import { expect } from "chai";
 import { Client } from "@xmtp/xmtp-js";
 import { Wallet } from "ethers";
+import axios from "axios";
 
 dotenv.config();
 
@@ -44,6 +45,22 @@ describe("bot subscription", () => {
             }
 
             expect(await getLastMessage()).to.contain("You are now subscribed");
+
+            // Invoke the webhook
+           await axios.post("http://localhost:12345/freestuffbot.xyz/webhook", {
+                "event": "free_games", 
+                "secret": "wdaji29dJadj91jAjd9a92eDak2",
+                "data": [ 565940 ]
+            }, {
+                headers: {
+                    "Accept": "application/json"
+                }
+            });
+
+            // Wait for the message to make its way through the system
+            await sleep(2000);
+
+            expect(await getLastMessage()).to.contain("Free game");
         })
     })
 })
