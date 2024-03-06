@@ -29,7 +29,7 @@ describe("bot subscription", () => {
             await conversation.send("subscribe");
 
             // Wait long enough for a response
-            await sleep(250);
+            await sleep(1000);
 
             const getMessages = async () => {
                 const messages = await conversation.messages({
