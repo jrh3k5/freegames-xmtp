@@ -28,14 +28,22 @@ jobs:
     steps:
     - name: "Checkout"
       uses: actions/checkout@v3
+    - run: npm ci
     - name: "Run integration tests"
-      run: docker compose -f docker-compose.integration_test.yml up localstack -d
+      run: docker compose -f docker-compose.integration_test.yml up xmtp-webhook-itest xmtp-bot-itest -d
+      env:
+        FREESTUFF_API_KEY: ${{ secrets.ITEST_FREESTUFF_API_KEY }}
+        XMTP_BOT_KEY: ${{ secrets.ITEST_XMTP_BOT_KEY }}
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
     - run: npm run itest
+      env:
+        XMTP_BOT_KEY: ${{ secrets.ITEST_XMTP_BOT_KEY }}
+    - name: Dump docker logs on failure
+      if: failure()
+      uses: jwalton/gh-docker-logs@v2
     
 

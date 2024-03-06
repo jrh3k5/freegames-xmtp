@@ -1,6 +1,5 @@
 import { expect } from "chai";
-import { DynamoDBClient, waitUntilTableExists } from "@aws-sdk/client-dynamodb";
-import { SubscriptionsTableName } from "../../dynamodb/constants.js"
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBSubscriptionService } from "../../subscriptions/dynamodb.js";
 
 describe("DynamoDB integration test", () => {
