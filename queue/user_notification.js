@@ -9,24 +9,26 @@ export function newUserNotificationHandler(notifier, killSwitch) {
             return
         }
 
-        const gameID = message.MessageAttributes.GameID.StringValue;
         const recipientAddress = message.MessageAttributes.RecipientAddress.StringValue;
-        const gameTitle = message.MessageAttributes.GameTitle.StringValue;
-        const gameDescription = message.MessageAttributes.GameDescription.StringValue;
-        const storeURL = message.MessageAttributes.StoreURL.StringValue;
-        const store = message.MessageAttributes.Store.StringValue;
-        const currentPrice = message.MessageAttributes.CurrentPrice.StringValue;
-        const imageURL = message.MessageAttributes.ImageURL.StringValue;
-        const kind = message.MessageAttributes.Kind.StringValue;
+
+        const data = JSON.parse(message.Body);
+        const gameID = data.gameID;
+        const gameTitle = data.gameTitle;
+        const gameDescription = data.gameDescription;
+        const storeURL = data.storeURL;
+        const store = data.store;
+        const currentPrice = data.currentPrice;
+        const imageURL = data.imageURL;
+        const kind = data.kind;
 
         let originalPrice;
-        if (message.MessageAttributes.OriginalPrice) {
-            originalPrice = message.MessageAttributes.OriginalPrice.StringValue;
+        if (data.originalPrice) {
+            originalPrice = data.originalPrice;
         }
 
         let expiryDate;
-        if (message.MessageAttributes.ExpiryDate) {
-            expiryDate = new Date(message.MessageAttributes.ExpiryDate.StringValue);
+        if (data.expiryDate) {
+            expiryDate = new Date(data.expiryDate);
         }
 
         const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store, currentPrice, imageURL, expiryDate, kind);
@@ -41,17 +43,7 @@ export function consumeUserNotifications(sqsClient, sqsQueueURL, messageHandler,
         waitTimeSeconds: parseInt(waitTimeSeconds) || 20,
         pollingWaitTimeMs: parseInt(pollingWaitTimeMs) || 20000,
         messageAttributeNames: [
-            "GameID", 
-            "GameTitle", 
-            "GameDescription", 
-            "RecipientAddress", 
-            "StoreURL", 
-            "OriginalPrice", 
-            "Store", 
-            "CurrentPrice",
-            "ImageURL",
-            "ExpiryDate",
-            "Kind"
+            "RecipientAddress"
         ],
         sqs: sqsClient,
         queueUrl: sqsQueueURL,
