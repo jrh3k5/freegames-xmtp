@@ -49,7 +49,7 @@ const dynamodbClient = new DynamoDBClient(awsConfig);
 console.log("Waiting for subscriptions table presence");
 
 // Wait for the table to exist
-const results = await waitUntilTableExists({client: dynamodbClient, maxWaitTime: 30}, {TableName: SubscriptionsTableName})
+const results = await waitUntilTableExists({client: dynamodbClient, maxWaitTime: 30, minDelay: 1, maxDelay: 2}, {TableName: SubscriptionsTableName})
 if (results.state !== 'SUCCESS') {
     throw `Subscriptions table did not exist in sufficient time; result state was '${results.state}'`;
 }
