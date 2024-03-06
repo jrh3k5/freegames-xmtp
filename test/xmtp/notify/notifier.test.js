@@ -42,7 +42,7 @@ describe("Notifier", () => {
             gameDetails.store = "steam";
             gameDetails.gameTitle = "This is a Free Game"
             gameDetails.originalPrice = "19.99"
-            gameDetails.url = "https://free.game/?id=freegame"
+            gameDetails.storeURL = "https://free.game/?id=freegame"
         })
 
         it("notifies the user about the free game", async ()=> {

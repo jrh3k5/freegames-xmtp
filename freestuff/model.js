@@ -7,7 +7,7 @@ export class GameDetails {
         this.gameID = gameID;
         this.gameTitle = gameTitle;
         this.gameDescription = gameDescription;
-        this.url = url;
+        this.storeURL = url;
         this.originalPrice = originalPrice;
         this.store = store;
         this.currentPrice = currentPrice;

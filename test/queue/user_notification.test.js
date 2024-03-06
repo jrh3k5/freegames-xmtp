@@ -65,7 +65,7 @@ describe("User Notification Handler", () => {
         expect(capturedDetails.gameID).to.equal(gameID);
         expect(capturedDetails.gameTitle).to.equal(gameTitle);
         expect(capturedDetails.gameDescription).to.equal(gameDescription);
-        expect(capturedDetails.url).to.equal(storeURL);
+        expect(capturedDetails.storeURL).to.equal(storeURL);
         expect(capturedDetails.originalPrice).to.equal(originalPrice);
         expect(capturedDetails.store).to.equal(store);
         expect(capturedDetails.currentPrice).to.equal(currentPrice);
