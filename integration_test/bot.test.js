@@ -35,11 +35,12 @@ describe("bot subscription", () => {
                 const messages = await conversation.messages({
                     limit: 100
                 });
-                if (!messages.length) {
+                const nonSenderMessages = messages.filter(m => m.senderAddress.toLowerCase() !== xmtpClient.address.toLowerCase());
+                if (!nonSenderMessages.length) {
                     return null;
                 }
 
-                return messages[0].content;
+                return nonSenderMessages[nonSenderMessages.length - 1].content;
             }
 
             expect(await getLastMessage()).to.contain("You are now subscribed");
