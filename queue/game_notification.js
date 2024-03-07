@@ -42,7 +42,8 @@ export function consumeGameNotifications(sqsClient,
 
             const gameDetails = new GameDetails(gameID, gameTitle, gameDescription, storeURL, originalPrice, store, currentPrice, imageURL, expiryDate, kind);
 
-            if (message.MessageAttributes.NotifyDefaultRecipientsOnly) {
+            // message.MessageAttributes can be undefined if there were no message attributes
+            if (message.MessageAttributes && message.MessageAttributes.NotifyDefaultRecipientsOnly) {
                 const defaultRecipients = getDefaultRecipients();
                 console.log(`Message is configured to message only default receipients; enqueuing message to ${defaultRecipients.length} recipients`);
 
