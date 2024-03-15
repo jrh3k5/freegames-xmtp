@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "mocha --recursive --exit",
-    "itest": "AWS_ACCESS_KEY_ID=lsitest AWS_SECRET_ACCESS_KEY=lsitestsecret mocha --recursive --exit --timeout 10000 integration_test"
+    "itest": "AWS_ACCESS_KEY_ID=lsitest AWS_SECRET_ACCESS_KEY=lsitestsecret mocha --recursive --exit --timeout 30000 integration_test"
   },
   "repository": {
     "type": "git",

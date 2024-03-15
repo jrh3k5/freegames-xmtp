@@ -148,5 +148,7 @@ curl -i https://api.freestuffbot.xyz/v1/games/free \
 If you wish to run the integration tests locally, execute the following:
 
 ```
-docker compose -f docker-compose.integration_test.yml up localstack -d && sleep 10 && npm run itest
+export FREESTUFF_API_KEY=<Freestuff API key>
+export XMTP_BOT_KEY=<private key to be used by bot>
+docker compose -f docker-compose.integration_test.yml up xmtp-webhook-itest xmtp-bot-itest -d && sleep 10 && npm run itest
 ```
