@@ -26,6 +26,9 @@ describe("bot subscription", () => {
             const botSigner = new Wallet(process.env.XMTP_BOT_KEY);
             const botAddress = await botSigner.getAddress();
 
+            // wait for the bot to register itself on the network
+            await retry(async () => xmtpClient.canMessage(botAddress));
+
             const conversation = await xmtpClient.conversations.newConversation(botAddress);
             await conversation.send("subscribe");
 
