@@ -44,7 +44,21 @@ describe("bot subscription", () => {
                 return `${nonSenderMessages[nonSenderMessages.length - 1].content}`;
             }
 
-            expect(await getLastMessage()).to.contain("You are now subscribed");
+            await retry(async () => {
+                const receivedMessage = await getLastMessage();
+                if (!receivedMessage) {
+                    console.debug("No message received yet, post-subscription");
+                    return false;
+                }
+
+                console.debug("Received post-subscription message: ", receivedMessage);
+
+                if (receivedMessage.indexOf("You are now subscribed") < 0) {
+                    return false;
+                }
+
+                return true;
+            });
 
             // Invoke the webhook
            await axios.post("http://localhost:12345/freestuffbot.xyz/webhook", {
@@ -57,12 +71,38 @@ describe("bot subscription", () => {
                 }
             });
 
-            // Wait for the message to make its way through the system
-            await sleep(2000);
+            await retry(async () => {
+                const gameDealMessage = await getLastMessage();
 
-            const gameDealMessage = await getLastMessage();
-            expect(gameDealMessage).to.contain("Free game");
-            expect(gameDealMessage).to.contain("https://redirect.freestuffbot.xyz"); // make sure that the store URL is passed along successfully
+                console.debug("Last-seen message after sending webhook request: ", gameDealMessage);
+
+                if (!gameDealMessage || gameDealMessage.indexOf("Free game") < 0) {
+                    return false;
+                }
+
+                expect(gameDealMessage).to.contain("Free game");
+                expect(gameDealMessage).to.contain("https://redirect.freestuffbot.xyz"); // make sure that the store URL is passed along successfully
+
+                return true;
+            });
         })
     })
 })
+
+async function retry(testFn) {
+    let retryCount = 0;
+    const maxTries = 20;
+
+    while(retryCount < maxTries) {
+        retryCount++
+
+        const succeeded = await testFn();
+        if(succeeded) {
+            break;
+        }
+
+        await sleep(500);
+    }
+
+    expect(retryCount).to.be.lessThan(maxTries);
+}
