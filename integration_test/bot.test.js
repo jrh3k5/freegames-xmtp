@@ -30,10 +30,6 @@ describe("bot subscription", () => {
             await retry(async () => xmtpClient.canMessage(botAddress));
 
             const conversation = await xmtpClient.conversations.newConversation(botAddress);
-            await conversation.send("subscribe");
-
-            // Wait long enough for a response
-            await sleep(1000);
 
             const getLastMessage = async () => {
                 const messages = await conversation.messages({
@@ -48,6 +44,9 @@ describe("bot subscription", () => {
             }
 
             await retry(async () => {
+                // Keep sending "subscribe" in case the bot hasn't started up fast enough
+                await conversation.send("subscribe");
+
                 const receivedMessage = await getLastMessage();
                 if (!receivedMessage) {
                     console.debug("No message received yet, post-subscription");
