@@ -23,7 +23,10 @@ describe("bot subscription", () => {
 
     describe("subscribing", () => {
         it("successfully subscribes", async () => {
-            const botSigner = new Wallet(process.env.XMTP_BOT_KEY);
+            const botKey = process.env.XMTP_BOT_KEY;
+            expect(botKey).to.not.be.undefined;
+
+            const botSigner = new Wallet(botKey);
             const botAddress = await botSigner.getAddress();
 
             // wait for the bot to register itself on the network
