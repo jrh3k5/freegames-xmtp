@@ -34,7 +34,7 @@
     "helmet": "^7.1.0",
     "node-cron": "^3.0.3",
     "node-cache": "^5.1.2",
-    "sqs-consumer": "^8.2.0"
+    "sqs-consumer": "^9.1.0"
   },
   "devDependencies": {
     "mocha": "^10.3.0"
