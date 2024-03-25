@@ -22,7 +22,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.540.0",
     "@aws-sdk/client-sqs": "^3.540.0",
-    "@aws-sdk/lib-dynamodb": "^3.535.0",
+    "@aws-sdk/lib-dynamodb": "^3.540.0",
     "@xmtp/content-type-remote-attachment": "^1.1.7",
     "@xmtp/xmtp-js": "^11.5.0",
     "alchemy-sdk": "^3.2.0",
