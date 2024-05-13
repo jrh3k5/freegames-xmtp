@@ -27,7 +27,7 @@
     "@xmtp/xmtp-js": "^11.6.0",
     "alchemy-sdk": "^3.2.1",
     "axios": "^1.6.8",
-    "chai": "^5.1.0",
+    "chai": "^5.1.1",
     "dotenv": "^16.4.5",
     "ethers": "^6.12.1",
     "express": "^4.19.2",
