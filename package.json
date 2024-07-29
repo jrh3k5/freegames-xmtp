@@ -24,7 +24,7 @@
     "@aws-sdk/client-sqs": "^3.614.0",
     "@aws-sdk/lib-dynamodb": "^3.614.0",
     "@xmtp/content-type-remote-attachment": "^1.1.9",
-    "@xmtp/xmtp-js": "^12.0.0",
+    "@xmtp/xmtp-js": "^12.1.0",
     "alchemy-sdk": "^3.3.1",
     "axios": "^1.7.2",
     "chai": "^5.1.1",
