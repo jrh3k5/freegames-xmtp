@@ -20,7 +20,7 @@
   "author": "Joshua Hyde",
   "license": "Apache-2.0",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.609.0",
+    "@aws-sdk/client-dynamodb": "^3.623.0",
     "@aws-sdk/client-sqs": "^3.620.1",
     "@aws-sdk/lib-dynamodb": "^3.614.0",
     "@xmtp/content-type-remote-attachment": "^1.1.9",
