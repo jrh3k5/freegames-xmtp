@@ -3,6 +3,8 @@ An XMTP bot that broadcasts announcements of free games over XMTP to subscribers
 
 This project has been validated to run on Node 18.
 
+**Archive Note**: this repository has been archived. It was an exploration of the feasibility of bringing integrations of the freestuff.xyz service into XMTP messaging. While technically feasible, the amount of effort needed to monetize and ensure the uptime that those who paid for it deserved was more effort than I can, presently, commit to a side project.
+
 ## Deploying
 
 This describes how to deploy this project.
